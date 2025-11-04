@@ -1,4 +1,4 @@
-package com.example.lube_logger_companion_app
+package com.computercoma.lubeloggercompanion
 
 import io.flutter.embedding.android.FlutterActivity
 

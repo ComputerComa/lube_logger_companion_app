@@ -5,6 +5,9 @@ import 'package:lube_logger_companion_app/presentation/routing/app_router.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/statistics_provider.dart';
 import 'package:lube_logger_companion_app/providers/latest_data_provider.dart';
+import 'package:lube_logger_companion_app/providers/odometer_provider.dart';
+import 'package:lube_logger_companion_app/providers/fuel_provider.dart';
+import 'package:lube_logger_companion_app/providers/reminder_provider.dart';
 import 'package:lube_logger_companion_app/data/models/reminder.dart';
 import 'package:lube_logger_companion_app/core/utils/date_formatters.dart';
 
@@ -25,19 +28,28 @@ class VehicleDetailScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Vehicle Details'),
       ),
-      body: vehicleAsync.when(
-        data: (vehicle) {
-          return RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(vehicleProvider(vehicleId));
-              ref.invalidate(statisticsProvider(vehicleId));
-              ref.invalidate(latestOdometerValueProvider(vehicleId));
-              ref.invalidate(latestFuelRecordProvider(vehicleId));
-              ref.invalidate(upcomingRemindersProvider(vehicleId));
-            },
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(16),
-              child: Column(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          // Invalidate all providers to refresh all data
+          ref.invalidate(vehicleProvider(vehicleId));
+          ref.invalidate(odometerRecordsProvider(vehicleId));
+          ref.invalidate(fuelRecordsProvider(vehicleId));
+          ref.invalidate(remindersProvider(vehicleId));
+          ref.invalidate(latestOdometerProvider(vehicleId));
+          ref.invalidate(statisticsProvider(vehicleId));
+          ref.invalidate(latestOdometerValueProvider(vehicleId));
+          ref.invalidate(latestFuelRecordProvider(vehicleId));
+          ref.invalidate(upcomingRemindersProvider(vehicleId));
+          
+          // Wait for the main vehicle provider to refresh
+          await ref.read(vehicleProvider(vehicleId).future);
+        },
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          child: vehicleAsync.when(
+            data: (vehicle) {
+              return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Vehicle Info Card
@@ -119,22 +131,30 @@ class VehicleDetailScreen extends ConsumerWidget {
                     error: (_, __) => const SizedBox(),
                   ),
                 ],
+              );
+            },
+            loading: () => const Padding(
+              padding: EdgeInsets.all(32.0),
+              child: Center(child: CircularProgressIndicator()),
+            ),
+            error: (error, stack) => Padding(
+              padding: const EdgeInsets.all(32.0),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text('Error: $error'),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        ref.invalidate(vehicleProvider(vehicleId));
+                      },
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
               ),
             ),
-          );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text('Error: $error'),
-              const SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () => ref.invalidate(vehicleProvider(vehicleId)),
-                child: const Text('Retry'),
-              ),
-            ],
           ),
         ),
       ),
@@ -273,11 +293,10 @@ class VehicleDetailScreen extends ConsumerWidget {
                       '${record.gallons.toStringAsFixed(2)} gallons',
                       style: Theme.of(context).textTheme.headlineSmall,
                     ),
-                    if (record.cost != null)
-                      Text(
-                        '\$${record.cost!.toStringAsFixed(2)}',
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
+                    Text(
+                      '\$${record.cost.toStringAsFixed(2)}',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     Text(
                       DateFormatters.formatForDisplay(record.date),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(

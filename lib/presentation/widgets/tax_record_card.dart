@@ -49,13 +49,16 @@ class TaxRecordCard extends StatelessWidget {
                     ),
                   ],
                   if (record.extraFields.isNotEmpty) ...[
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 8),
                     Wrap(
                       spacing: 8,
+                      runSpacing: 4,
                       children: record.extraFields.map((field) {
                         return Chip(
                           label: Text('${field.name}: ${field.value}'),
                           labelStyle: const TextStyle(fontSize: 12),
+                          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         );
                       }).toList(),
                     ),

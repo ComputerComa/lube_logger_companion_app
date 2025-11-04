@@ -1,0 +1,11 @@
+name: Issue Templates
+description: Choose an issue template
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a Question
+    url: https://github.com/your-username/lube_logger_companion_app/discussions
+    about: Ask questions and discuss ideas
+  - name: LubeLogger Documentation
+    url: https://docs.lubelogger.com/
+    about: Check the LubeLogger documentation for setup and usage
+

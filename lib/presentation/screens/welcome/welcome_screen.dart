@@ -165,7 +165,7 @@ class WelcomeScreen extends StatelessWidget {
               // Companion App GitHub Link
               Card(
                 child: InkWell(
-                  onTap: () => _launchURL('https://github.com/your-username/lube_logger_companion_app', context),
+                  onTap: () => _launchURL('https://github.com/ComputerComa/lube_logger_companion_app', context),
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Row(
@@ -257,16 +257,7 @@ class WelcomeScreen extends StatelessWidget {
                 child: const Text('Get Started'),
               ),
               
-              const SizedBox(height: 16),
-              
-              TextButton(
-                onPressed: () async {
-                  // Mark welcome as shown and skip to setup
-                  await StorageService.setWelcomeShown(true);
-                  context.go(AppRoutes.setup);
-                },
-                child: const Text('Skip Introduction'),
-              ),
+             
             ],
           ),
         ),

@@ -21,8 +21,12 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
   final _gallonsController = TextEditingController();
   final _costController = TextEditingController();
   final _notesController = TextEditingController();
+  final _tagController = TextEditingController();
   DateTime _selectedDate = DateTime.now();
   int? _selectedVehicleId;
+  bool _isFillToFull = false;
+  bool _missedFuelUp = false;
+  final Set<String> _selectedTags = {};
 
   @override
   void initState() {
@@ -36,6 +40,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
     _gallonsController.dispose();
     _costController.dispose();
     _notesController.dispose();
+    _tagController.dispose();
     super.dispose();
   }
 
@@ -51,6 +56,22 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
         _selectedDate = picked;
       });
     }
+  }
+
+  void _addTag(String tag) {
+    final trimmedTag = tag.trim();
+    if (trimmedTag.isNotEmpty) {
+      setState(() {
+        _selectedTags.add(trimmedTag);
+      });
+      _tagController.clear();
+    }
+  }
+
+  void _removeTag(String tag) {
+    setState(() {
+      _selectedTags.remove(tag);
+    });
   }
 
   Future<void> _handleSubmit() async {
@@ -72,9 +93,10 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
           date: _selectedDate,
           odometer: int.parse(_odometerController.text),
           gallons: double.parse(_gallonsController.text),
-          cost: _costController.text.isNotEmpty
-              ? double.parse(_costController.text)
-              : null,
+          cost: double.parse(_costController.text),
+          isFillToFull: _isFillToFull,
+          missedFuelUp: _missedFuelUp,
+          tags: _selectedTags.toList(),
           notes: _notesController.text.isNotEmpty ? _notesController.text : null,
         ),
       ).future);
@@ -176,12 +198,16 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
               TextFormField(
                 controller: _costController,
                 decoration: const InputDecoration(
-                  labelText: 'Cost (optional)',
+                  labelText: 'Cost',
                   hintText: 'Enter total cost',
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.attach_money),
                 ),
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
+                validator: (value) => Validators.validatePositiveNumber(
+                  value,
+                  'Cost',
+                ),
               ),
               const SizedBox(height: 16),
               InkWell(
@@ -195,6 +221,125 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                   child: Text(DateFormat('MM/dd/yyyy').format(_selectedDate)),
                 ),
               ),
+              const SizedBox(height: 16),
+              SwitchListTile(
+                title: const Text('Filled To Full'),
+                value: _isFillToFull,
+                onChanged: (value) {
+                  setState(() {
+                    _isFillToFull = value;
+                  });
+                },
+              ),
+              SwitchListTile(
+                title: const Text('Missed last Refill'),
+                value: _missedFuelUp,
+                onChanged: (value) {
+                  setState(() {
+                    _missedFuelUp = value;
+                  });
+                },
+              ),
+              const SizedBox(height: 16),
+              // Tags Section
+              const Text(
+                'Tags',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              // Selected Tags
+              if (_selectedTags.isNotEmpty) ...[
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _selectedTags.map((tag) {
+                    return Chip(
+                      label: Text(tag),
+                      onDeleted: () => _removeTag(tag),
+                      deleteIcon: const Icon(Icons.close, size: 18),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
+              // Tag Input
+              Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _tagController,
+                      decoration: const InputDecoration(
+                        labelText: 'Add Tag',
+                        hintText: 'Enter tag name',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.tag),
+                      ),
+                      onSubmitted: _addTag,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  IconButton(
+                    icon: const Icon(Icons.add),
+                    onPressed: () => _addTag(_tagController.text),
+                    tooltip: 'Add Tag',
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              // Existing Tags
+              if (_selectedVehicleId != null)
+                Consumer(
+                  builder: (context, ref, child) {
+                    final fuelAsync = ref.watch(fuelRecordsProvider(_selectedVehicleId!));
+                    return fuelAsync.when(
+                      data: (records) {
+                        // Collect all unique tags from this vehicle's fuel records
+                        final allTags = <String>{};
+                        for (final record in records) {
+                          allTags.addAll(record.tags);
+                        }
+                        
+                        // Filter out already selected tags
+                        final availableTags = allTags.where((tag) => !_selectedTags.contains(tag) && tag.isNotEmpty).toList()..sort();
+                        
+                        if (availableTags.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Existing Tags',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.grey,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Wrap(
+                              spacing: 8,
+                              runSpacing: 8,
+                              children: availableTags.map((tag) {
+                                return ActionChip(
+                                  label: Text(tag),
+                                  onPressed: () => _addTag(tag),
+                                  avatar: const Icon(Icons.add, size: 18),
+                                );
+                              }).toList(),
+                            ),
+                          ],
+                        );
+                      },
+                      loading: () => const SizedBox.shrink(),
+                      error: (_, __) => const SizedBox.shrink(),
+                    );
+                  },
+                ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _notesController,

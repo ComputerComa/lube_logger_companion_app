@@ -27,7 +27,10 @@ final addFuelProvider = FutureProvider.family<void, ({
   DateTime date,
   int odometer,
   double gallons,
-  double? cost,
+  double cost,
+  bool isFillToFull,
+  bool missedFuelUp,
+  List<String> tags,
   String? notes,
 })>((ref, params) async {
   final authState = ref.watch(authStateProvider);
@@ -49,6 +52,9 @@ final addFuelProvider = FutureProvider.family<void, ({
     odometer: params.odometer,
     gallons: params.gallons,
     cost: params.cost,
+    isFillToFull: params.isFillToFull,
+    missedFuelUp: params.missedFuelUp,
+    tags: params.tags,
     notes: params.notes,
   );
   

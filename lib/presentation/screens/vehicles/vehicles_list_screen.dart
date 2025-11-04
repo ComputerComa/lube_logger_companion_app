@@ -17,10 +17,11 @@ class VehiclesListScreen extends ConsumerWidget {
         title: const Text('LubeLogger Companion'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings),
+            icon: const Icon(Icons.info_outline),
             onPressed: () {
-              // TODO: Add settings/logout
+              context.push(AppRoutes.info);
             },
+            tooltip: 'About',
           ),
         ],
       ),

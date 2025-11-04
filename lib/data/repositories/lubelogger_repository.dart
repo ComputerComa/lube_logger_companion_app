@@ -8,6 +8,7 @@ import 'package:lube_logger_companion_app/data/models/service_record.dart';
 import 'package:lube_logger_companion_app/data/models/repair_record.dart';
 import 'package:lube_logger_companion_app/data/models/upgrade_record.dart';
 import 'package:lube_logger_companion_app/data/models/tax_record.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
 import 'package:lube_logger_companion_app/core/utils/date_formatters.dart';
 
 class LubeLoggerRepository {
@@ -307,17 +308,23 @@ class LubeLoggerRepository {
     required DateTime date,
     required int odometer,
     required double gallons,
-    double? cost,
+    required double cost,
+    bool isFillToFull = false,
+    bool missedFuelUp = false,
+    List<String> tags = const [],
     String? notes,
   }) async {
     final formData = <String, dynamic>{
       'date': DateFormatters.formatForApi(date),
       'odometer': odometer.toString(),
-      'gallons': gallons.toString(),
+      'fuelConsumed': gallons.toString(),
+      'cost': cost.toString(),
+      'isFillToFull': isFillToFull ? 'True' : 'False',
+      'missedFuelUp': missedFuelUp ? 'True' : 'False',
     };
     
-    if (cost != null) {
-      formData['cost'] = cost.toString();
+    if (tags.isNotEmpty) {
+      formData['tags'] = tags.join(' ');
     }
     
     if (notes != null && notes.isNotEmpty) {

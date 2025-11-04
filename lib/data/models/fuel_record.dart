@@ -1,12 +1,18 @@
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
+
 class FuelRecord {
   final int id;
   final int vehicleId;
   final DateTime date;
   final int odometer;
   final double gallons;
-  final double? cost;
+  final double cost;
   final double? pricePerGallon;
   final String? notes;
+  final bool isFillToFull;
+  final bool missedFuelUp;
+  final List<String> tags;
+  final List<ExtraField> extraFields;
   
   FuelRecord({
     required this.id,
@@ -14,9 +20,13 @@ class FuelRecord {
     required this.date,
     required this.odometer,
     required this.gallons,
-    this.cost,
+    required this.cost,
     this.pricePerGallon,
     this.notes,
+    this.isFillToFull = false,
+    this.missedFuelUp = false,
+    this.tags = const [],
+    this.extraFields = const [],
   });
   
   factory FuelRecord.fromJson(Map<String, dynamic> json) {
@@ -102,12 +112,45 @@ class FuelRecord {
       throw Exception('fuelConsumed is required but was null in fuel record');
     }
     
-    // Calculate pricePerGallon from cost and fuelConsumed if not provided
-    final costValue = parseDoubleNullable(json['cost']);
+    // Parse cost - now required
+    final costValue = parseDouble(json['cost']);
     final fuelConsumedValue = parseDouble(fuelConsumed);
-    final pricePerGallonValue = costValue != null && fuelConsumedValue > 0
+    final pricePerGallonValue = costValue > 0 && fuelConsumedValue > 0
         ? costValue / fuelConsumedValue
         : parseDoubleNullable(json['pricePerGallon'] ?? json['price_per_gallon']);
+    
+    // Parse boolean fields
+    bool parseBool(dynamic value) {
+      if (value == null) return false;
+      if (value is bool) return value;
+      if (value is String) {
+        return value.toLowerCase() == 'true';
+      }
+      return false;
+    }
+    
+    final isFillToFull = parseBool(json['isFillToFull'] ?? json['is_fill_to_full'] ?? json['isFillToFull']);
+    final missedFuelUp = parseBool(json['missedFuelUp'] ?? json['missed_fuel_up'] ?? json['missedFuelUp']);
+    
+    // Parse tags - can be space-separated string or list
+    List<String> parseTags(dynamic value) {
+      if (value == null) return [];
+      if (value is List) {
+        return value.map((e) => e.toString().trim()).where((e) => e.isNotEmpty).toList();
+      }
+      if (value is String && value.isNotEmpty) {
+        return value.split(' ').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      }
+      return [];
+    }
+    
+    final tags = parseTags(json['tags'] ?? json['Tags']);
+    
+    // Parse extraFields
+    final extraFieldsJson = json['extrafields'] as List<dynamic>? ?? json['extraFields'] as List<dynamic>? ?? [];
+    final extraFields = extraFieldsJson
+        .map((e) => ExtraField.fromJson(e as Map<String, dynamic>))
+        .toList();
     
     return FuelRecord(
       id: id,
@@ -118,6 +161,10 @@ class FuelRecord {
       cost: costValue,
       pricePerGallon: pricePerGallonValue,
       notes: json['notes'] as String?,
+      isFillToFull: isFillToFull,
+      missedFuelUp: missedFuelUp,
+      tags: tags,
+      extraFields: extraFields,
     );
   }
   
@@ -131,12 +178,16 @@ class FuelRecord {
       'cost': cost,
       'pricePerGallon': pricePerGallon,
       'notes': notes,
+      'isFillToFull': isFillToFull,
+      'missedFuelUp': missedFuelUp,
+      'tags': tags.join(' '),
+      'extrafields': extraFields.map((e) => e.toJson()).toList(),
     };
   }
   
   double get calculatedPricePerGallon {
-    if (cost != null && gallons > 0) {
-      return cost! / gallons;
+    if (gallons > 0) {
+      return cost / gallons;
     }
     return pricePerGallon ?? 0.0;
   }

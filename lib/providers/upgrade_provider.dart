@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lube_logger_companion_app/data/models/upgrade_record.dart';
-import 'package:lube_logger_companion_app/data/models/odometer_record.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
 import 'package:lube_logger_companion_app/providers/auth_provider.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 

@@ -1,4 +1,4 @@
-import 'package:lube_logger_companion_app/data/models/odometer_record.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
 
 class TaxRecord {
   final int id;

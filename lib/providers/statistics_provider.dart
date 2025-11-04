@@ -42,9 +42,7 @@ VehicleStatistics _calculateStatistics({
   
   // Calculate fuel statistics
   for (final record in fuelRecords) {
-    if (record.cost != null) {
-      totalFuelCost += record.cost!;
-    }
+    totalFuelCost += record.cost;
     totalGallons += record.gallons;
   }
   
