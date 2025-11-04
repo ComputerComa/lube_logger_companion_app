@@ -1,16 +1,12 @@
 # lube_logger_companion_app
 
-A new Flutter project.
+A Cross Platfrom (Android & IOS primarily) companion app for the Open Source [Lube Logger](https://github.com/hargata/lubelog) vehicle maintenance and fuel Mileage Tracker. 
+
 
 ## Getting Started
+This companion app requires a Lube Logger instance setup already. If you don't have this setup, read here on instructions on how to get it setup. [Getting Started](https://docs.lubelogger.com/Installation/Getting%20Started) 
 
-This project is a starting point for a Flutter application.
+You will need to have your instance publicly available (Don't forget password Protection!) or have some sort of remote access to your instance (tailscale, wireguard, etc. )
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+This app is very much still in development so expect new features, breaking changes, etc. 
+The ultimate goal is to be as close as possible in similarity as the Web App. This may not be possible in all instances. 
