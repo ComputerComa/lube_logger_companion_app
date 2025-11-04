@@ -1,0 +1,47 @@
+{
+    "Service Record": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Repairs": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Upgrades": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Fuel": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Tax": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Supplies": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Planner": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Odometer": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ],
+    "Vehicle": [
+        { "name": "example1", "required": true },
+        { "name": "example2", "required": false },
+        { "name": "example3", "required": true }
+    ]
+}
