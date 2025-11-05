@@ -64,7 +64,7 @@ class _FuelListScreenState extends ConsumerState<FuelListScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<int>(
-                  value: _selectedVehicleId,
+                  initialValue: _selectedVehicleId,
                   decoration: const InputDecoration(
                     labelText: 'Select Vehicle',
                     border: OutlineInputBorder(),

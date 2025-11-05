@@ -83,7 +83,7 @@ class ServiceRecord {
     
     // Handle id - might be missing from API response
     int generateId(String date, String description) {
-      return '${date}_${description}'.hashCode;
+      return '$date' '_$description'.hashCode;
     }
     
     final idValue = json['id'] ?? json['Id'];

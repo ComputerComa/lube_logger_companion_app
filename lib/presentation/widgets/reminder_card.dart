@@ -53,7 +53,7 @@ class ReminderCard extends StatelessWidget {
             ),
             Chip(
               label: Text(reminder.urgency.displayName),
-              backgroundColor: reminder.urgency.color.withOpacity(0.2),
+              backgroundColor: reminder.urgency.color.withValues(alpha: 0.2),
             ),
           ],
         ),

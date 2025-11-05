@@ -51,7 +51,8 @@ class _UpgradeListScreenState extends ConsumerState<UpgradeListScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<int>(
-                  value: _selectedVehicleId,
+                  key: ValueKey(_selectedVehicleId),
+                  initialValue: _selectedVehicleId,
                   decoration: const InputDecoration(
                     labelText: 'Select Vehicle',
                     border: OutlineInputBorder(),

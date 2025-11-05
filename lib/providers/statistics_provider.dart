@@ -20,13 +20,13 @@ final statisticsProvider = FutureProvider.family<VehicleStatistics, int>((ref, v
           latestOdometer: latestOdometer,
         ),
         loading: () => VehicleStatistics.empty(vehicleId),
-        error: (_, __) => VehicleStatistics.empty(vehicleId),
+        error: (_, _) => VehicleStatistics.empty(vehicleId),
       ),
       loading: () => VehicleStatistics.empty(vehicleId),
-      error: (_, __) => VehicleStatistics.empty(vehicleId),
+      error: (_, _) => VehicleStatistics.empty(vehicleId),
     ),
     loading: () => VehicleStatistics.empty(vehicleId),
-    error: (_, __) => VehicleStatistics.empty(vehicleId),
+    error: (_, _) => VehicleStatistics.empty(vehicleId),
   );
 });
 

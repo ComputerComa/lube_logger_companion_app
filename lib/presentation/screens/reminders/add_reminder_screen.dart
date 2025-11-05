@@ -108,7 +108,8 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                     return const Text('No vehicles found');
                   }
                   return DropdownButtonFormField<int>(
-                    value: _selectedVehicleId,
+                    key: ValueKey(_selectedVehicleId),
+                    initialValue: _selectedVehicleId,
                     decoration: const InputDecoration(
                       labelText: 'Vehicle',
                       border: OutlineInputBorder(),
@@ -133,7 +134,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const Text('Error loading vehicles'),
+                error: (_, _) => const Text('Error loading vehicles'),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -160,7 +161,8 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<ReminderUrgency>(
-                value: _selectedUrgency,
+                key: ValueKey(_selectedUrgency),
+                initialValue: _selectedUrgency,
                 decoration: const InputDecoration(
                   labelText: 'Urgency',
                   border: OutlineInputBorder(),

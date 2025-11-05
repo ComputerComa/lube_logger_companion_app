@@ -249,7 +249,9 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () async {
                   // Mark welcome as shown
                   await StorageService.setWelcomeShown(true);
-                  context.go(AppRoutes.setup);
+                  if (context.mounted) {
+                    context.go(AppRoutes.setup);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),

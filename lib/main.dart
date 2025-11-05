@@ -14,7 +14,7 @@ void main() async {
   // Initialize notifications asynchronously (don't block app startup)
   // Permissions will be requested during setup flow
   NotificationService.initialize().catchError((error) {
-    print('Notification initialization error: $error');
+    debugPrint('Notification initialization error: $error');
     return;
   });
   

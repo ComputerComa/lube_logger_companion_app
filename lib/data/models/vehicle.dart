@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 class Vehicle {
   final int id;
   final String? make;
@@ -77,8 +79,8 @@ class Vehicle {
     final id = parseId(json['id']);
     if (id == null) {
       // Log the actual JSON data for debugging
-      print('Warning: Vehicle ID is null or invalid in JSON: ${json['id']}');
-      print('Full JSON keys: ${json.keys.toList()}');
+      debugPrint('Warning: Vehicle ID is null or invalid in JSON: ${json['id']}');
+      debugPrint('Full JSON keys: ${json.keys.toList()}');
       throw Exception('Vehicle ID is required but was null or invalid. JSON keys: ${json.keys.toList()}');
     }
     

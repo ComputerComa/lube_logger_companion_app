@@ -49,7 +49,8 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<int>(
-                  value: _selectedVehicleId,
+                  key: ValueKey(_selectedVehicleId),
+                  initialValue: _selectedVehicleId,
                   decoration: const InputDecoration(
                     labelText: 'Select Vehicle',
                     border: OutlineInputBorder(),
@@ -214,7 +215,7 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     int flex = 0,
   }) {
     final widget = Card(
-      color: color.withOpacity(0.1),
+      color: color.withValues(alpha: 0.1),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(

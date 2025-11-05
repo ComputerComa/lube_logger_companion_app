@@ -55,7 +55,8 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: DropdownButtonFormField<int>(
-                  value: _selectedVehicleId,
+                  key: ValueKey(_selectedVehicleId),
+                  initialValue: _selectedVehicleId,
                   decoration: const InputDecoration(
                     labelText: 'Select Vehicle (optional)',
                     border: OutlineInputBorder(),
@@ -70,7 +71,7 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
                         value: vehicle.id,
                         child: Text(vehicle.displayName),
                       );
-                    }).toList(),
+                    }),
                   ],
                   onChanged: (value) {
                     setState(() {

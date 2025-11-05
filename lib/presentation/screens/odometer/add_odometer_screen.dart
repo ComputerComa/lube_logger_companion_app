@@ -105,7 +105,8 @@ class _AddOdometerScreenState extends ConsumerState<AddOdometerScreen> {
                     return const Text('No vehicles found');
                   }
                   return DropdownButtonFormField<int>(
-                    value: _selectedVehicleId,
+                    key: ValueKey(_selectedVehicleId),
+                    initialValue: _selectedVehicleId,
                     decoration: const InputDecoration(
                       labelText: 'Vehicle',
                       border: OutlineInputBorder(),
@@ -130,7 +131,7 @@ class _AddOdometerScreenState extends ConsumerState<AddOdometerScreen> {
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const Text('Error loading vehicles'),
+                error: (_, _) => const Text('Error loading vehicles'),
               ),
               const SizedBox(height: 16),
               TextFormField(

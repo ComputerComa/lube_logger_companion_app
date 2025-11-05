@@ -137,7 +137,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                     return const Text('No vehicles found');
                   }
                   return DropdownButtonFormField<int>(
-                    value: _selectedVehicleId,
+                    initialValue: _selectedVehicleId,
                     decoration: const InputDecoration(
                       labelText: 'Vehicle',
                       border: OutlineInputBorder(),
@@ -162,7 +162,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                   );
                 },
                 loading: () => const CircularProgressIndicator(),
-                error: (_, __) => const Text('Error loading vehicles'),
+                error: (error, stackTrace) => const Text('Error loading vehicles'),
               ),
               const SizedBox(height: 16),
               TextFormField(
@@ -336,7 +336,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                         );
                       },
                       loading: () => const SizedBox.shrink(),
-                      error: (_, __) => const SizedBox.shrink(),
+                      error: (error, stackTrace) => const SizedBox.shrink(),
                     );
                   },
                 ),

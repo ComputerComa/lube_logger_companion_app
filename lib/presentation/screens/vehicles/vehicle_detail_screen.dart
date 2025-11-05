@@ -92,7 +92,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
                     )),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                   ),
                   
                   const SizedBox(height: 16),
@@ -104,7 +104,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
                     )),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                   ),
                   
                   const SizedBox(height: 16),
@@ -116,7 +116,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
                     )),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                   ),
                   
                   const SizedBox(height: 16),
@@ -128,7 +128,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
                     )),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                   ),
                 ],
               );
@@ -381,7 +381,7 @@ class VehicleDetailScreen extends ConsumerWidget {
                       ],
                     ),
                   );
-                }).toList(),
+                }),
               if (reminders.length > 3)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),

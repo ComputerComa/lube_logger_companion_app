@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lube_logger_companion_app/services/storage_service.dart';
 import 'package:lube_logger_companion_app/services/auth_service.dart';
@@ -99,7 +100,7 @@ class AuthNotifier extends Notifier<AuthState> {
         return false;
       }
     } catch (e) {
-      print('Login error: $e');
+      debugPrint('Login error: $e');
       String errorMessage = 'Failed to connect to server';
       
       // Provide more specific error messages

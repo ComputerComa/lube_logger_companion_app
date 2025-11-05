@@ -74,7 +74,7 @@ class OdometerRecord {
     
     // Handle id - might be missing from API response, generate a hash from date + odometer if needed
     int generateId(String date, String odometer) {
-      return '${date}_${odometer}'.hashCode;
+      return '$date' '_$odometer'.hashCode;
     }
     
     final idValue = json['id'] ?? json['Id'];

@@ -12,7 +12,7 @@ final latestOdometerValueProvider = FutureProvider.family<int?, int>((ref, vehic
   return odometerAsync.when(
     data: (value) => value > 0 ? value : null,
     loading: () => null,
-    error: (_, __) => null,
+    error: (_, _) => null,
   );
 });
 
@@ -29,7 +29,7 @@ final latestFuelRecordProvider = FutureProvider.family<FuelRecord?, int>((ref, v
       return sorted.first;
     },
     loading: () => null,
-    error: (_, __) => null,
+    error: (_, _) => null,
   );
 });
 
@@ -54,6 +54,6 @@ final upcomingRemindersProvider = FutureProvider.family<List<Reminder>, int>((re
       return upcoming;
     },
     loading: () => [],
-    error: (_, __) => [],
+    error: (_, _) => [],
   );
 });

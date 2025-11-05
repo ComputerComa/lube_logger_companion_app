@@ -131,7 +131,7 @@ class Reminder {
     
     // Handle id - might be missing from API response
     int generateId(String description, String dueDate) {
-      return '${description}_${dueDate}'.hashCode;
+      return '$description' '_$dueDate'.hashCode;
     }
     
     final idValue = json['id'] ?? json['Id'];
