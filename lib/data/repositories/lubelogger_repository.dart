@@ -448,6 +448,119 @@ class LubeLoggerRepository {
     throw Exception('Failed to load reminders: ${response.statusCode}');
   }
 
+  Future<void> addReminder({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int vehicleId,
+    required DateTime date,
+    required String description,
+    required ReminderUrgency urgency,
+    String? notes,
+    String? metric,
+    int? dueOdometer,
+  }) async {
+    final formData = <String, dynamic>{
+      'date': DateFormatters.formatForApi(date),
+      'description': description,
+      'urgency': urgency.name,
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (metric != null && metric.isNotEmpty) {
+      formData['metric'] = metric;
+    }
+    
+    if (dueOdometer != null) {
+      formData['dueOdometer'] = dueOdometer.toString();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.post(
+      '/api/vehicle/reminders/add',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'vehicleId': vehicleId.toString()},
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to add reminder: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updateReminder({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required DateTime date,
+    required String description,
+    required ReminderUrgency urgency,
+    String? notes,
+    String? metric,
+    int? dueOdometer,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'date': DateFormatters.formatForApi(date),
+      'description': description,
+      'urgency': urgency.name,
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (metric != null && metric.isNotEmpty) {
+      formData['metric'] = metric;
+    }
+    
+    if (dueOdometer != null) {
+      formData['dueOdometer'] = dueOdometer.toString();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/reminders/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update reminder: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteReminder({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/reminders/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete reminder: ${response.statusCode}');
+    }
+  }
+
   // Service Records
   Future<List<ServiceRecord>> getServiceRecords({
     required String serverUrl,
@@ -520,6 +633,69 @@ class LubeLoggerRepository {
     
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to add service record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updateServiceRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required DateTime date,
+    required int odometer,
+    required String description,
+    required double cost,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'date': DateFormatters.formatForApi(date),
+      'odometer': odometer.toString(),
+      'description': description,
+      'cost': cost.toString(),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/servicerecords/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update service record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteServiceRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/servicerecords/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete service record: ${response.statusCode}');
     }
   }
 
@@ -598,6 +774,69 @@ class LubeLoggerRepository {
     }
   }
 
+  Future<void> updateRepairRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required DateTime date,
+    required int odometer,
+    required String description,
+    required double cost,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'date': DateFormatters.formatForApi(date),
+      'odometer': odometer.toString(),
+      'description': description,
+      'cost': cost.toString(),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/repairrecords/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update repair record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteRepairRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/repairrecords/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete repair record: ${response.statusCode}');
+    }
+  }
+
   // Upgrade Records
   Future<List<UpgradeRecord>> getUpgradeRecords({
     required String serverUrl,
@@ -673,6 +912,69 @@ class LubeLoggerRepository {
     }
   }
 
+  Future<void> updateUpgradeRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required DateTime date,
+    required int odometer,
+    required String description,
+    required double cost,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'date': DateFormatters.formatForApi(date),
+      'odometer': odometer.toString(),
+      'description': description,
+      'cost': cost.toString(),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/upgraderecords/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update upgrade record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteUpgradeRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/upgraderecords/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete upgrade record: ${response.statusCode}');
+    }
+  }
+
   // Tax Records
   Future<List<TaxRecord>> getTaxRecords({
     required String serverUrl,
@@ -743,6 +1045,67 @@ class LubeLoggerRepository {
     
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception('Failed to add tax record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updateTaxRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required DateTime date,
+    required String description,
+    required double cost,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'date': DateFormatters.formatForApi(date),
+      'description': description,
+      'cost': cost.toString(),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/taxrecords/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update tax record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deleteTaxRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/taxrecords/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete tax record: ${response.statusCode}');
     }
   }
 }

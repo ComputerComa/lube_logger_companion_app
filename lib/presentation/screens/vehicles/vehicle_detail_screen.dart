@@ -8,7 +8,9 @@ import 'package:lube_logger_companion_app/providers/latest_data_provider.dart';
 import 'package:lube_logger_companion_app/providers/odometer_provider.dart';
 import 'package:lube_logger_companion_app/providers/fuel_provider.dart';
 import 'package:lube_logger_companion_app/providers/reminder_provider.dart';
+import 'package:lube_logger_companion_app/providers/service_provider.dart';
 import 'package:lube_logger_companion_app/data/models/reminder.dart';
+import 'package:lube_logger_companion_app/data/models/service_record.dart';
 import 'package:lube_logger_companion_app/core/utils/date_formatters.dart';
 
 class VehicleDetailScreen extends ConsumerWidget {
@@ -23,6 +25,7 @@ class VehicleDetailScreen extends ConsumerWidget {
     final latestOdometerAsync = ref.watch(latestOdometerValueProvider(vehicleId));
     final latestFuelAsync = ref.watch(latestFuelRecordProvider(vehicleId));
     final upcomingRemindersAsync = ref.watch(upcomingRemindersProvider(vehicleId));
+    final serviceRecordsAsync = ref.watch(serviceRecordsProvider(vehicleId));
 
     return Scaffold(
       appBar: AppBar(
@@ -35,6 +38,7 @@ class VehicleDetailScreen extends ConsumerWidget {
           ref.invalidate(odometerRecordsProvider(vehicleId));
           ref.invalidate(fuelRecordsProvider(vehicleId));
           ref.invalidate(remindersProvider(vehicleId));
+          ref.invalidate(serviceRecordsProvider(vehicleId));
           ref.invalidate(latestOdometerProvider(vehicleId));
           ref.invalidate(statisticsProvider(vehicleId));
           ref.invalidate(latestOdometerValueProvider(vehicleId));
@@ -100,6 +104,18 @@ class VehicleDetailScreen extends ConsumerWidget {
                   // Latest Fuel Entry Card
                   latestFuelAsync.when(
                     data: (record) => _buildLatestFuelCard(context, record),
+                    loading: () => const Card(child: Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Center(child: CircularProgressIndicator()),
+                    )),
+                    error: (_, _) => const SizedBox(),
+                  ),
+                  
+                  const SizedBox(height: 16),
+                  
+                  // Recent Service Records Card
+                  serviceRecordsAsync.when(
+                    data: (records) => _buildServiceRecordsCard(context, records, vehicleId),
                     loading: () => const Card(child: Padding(
                       padding: EdgeInsets.all(16),
                       child: Center(child: CircularProgressIndicator()),
@@ -314,6 +330,112 @@ class VehicleDetailScreen extends ConsumerWidget {
     );
   }
 
+  Widget _buildServiceRecordsCard(BuildContext context, List<ServiceRecord> records, int vehicleId) {
+    // Sort by date descending (most recent first)
+    final sortedRecords = List<ServiceRecord>.from(records)
+      ..sort((a, b) => b.date.compareTo(a.date));
+    
+    return Card(
+      child: InkWell(
+        onTap: () {
+          context.push('${AppRoutes.service}?vehicleId=$vehicleId');
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.build, size: 32, color: Colors.blue),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      'Recent Service Records',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ),
+                  const Icon(Icons.chevron_right),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (sortedRecords.isEmpty)
+                Text(
+                  'No service records yet',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Colors.grey,
+                      ),
+                )
+              else
+                ...sortedRecords.take(3).map((record) {
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                record.description,
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                              const SizedBox(height: 2),
+                              Row(
+                                children: [
+                                  Text(
+                                    DateFormatters.formatForDisplay(record.date),
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: Colors.grey,
+                                        ),
+                                  ),
+                                  if (record.odometer > 0) ...[
+                                    const Text(' • ', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      '${record.odometer} miles',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey,
+                                          ),
+                                    ),
+                                  ],
+                                  if (record.cost > 0) ...[
+                                    const Text(' • ', style: TextStyle(color: Colors.grey)),
+                                    Text(
+                                      '\$${record.cost.toStringAsFixed(2)}',
+                                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                            color: Colors.grey,
+                                          ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              if (sortedRecords.length > 3)
+                Padding(
+                  padding: const EdgeInsets.only(top: 8),
+                  child: Text(
+                    '${sortedRecords.length - 3} more service record${sortedRecords.length - 3 > 1 ? 's' : ''}',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.blue,
+                          fontStyle: FontStyle.italic,
+                        ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildRemindersCard(BuildContext context, List<Reminder> reminders, int vehicleId) {
     return Card(
       child: InkWell(
@@ -477,6 +599,14 @@ class VehicleDetailScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('${AppRoutes.addFuel}?vehicleId=$vehicleId');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.build),
+              title: const Text('Add Service Record'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('${AppRoutes.addService}?vehicleId=$vehicleId');
               },
             ),
             ListTile(

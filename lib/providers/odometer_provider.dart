@@ -2,24 +2,34 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lube_logger_companion_app/data/models/odometer_record.dart';
 import 'package:lube_logger_companion_app/data/models/extra_field.dart';
 import 'package:lube_logger_companion_app/providers/auth_provider.dart';
+import 'package:lube_logger_companion_app/providers/auth_helpers.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
+import 'package:lube_logger_companion_app/services/cached_data_helper.dart';
 
 final odometerRecordsProvider = FutureProvider.family<List<OdometerRecord>, int>((ref, vehicleId) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
-  return await repository.getOdometerRecords(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
-    vehicleId: vehicleId,
+  final cacheKey = CachedDataHelper.vehicleCacheKey(
+    'odometer_records',
+    vehicleId,
+      credentials.serverUrl,
+      credentials.username,
+  );
+  
+  return await CachedDataHelper.fetchWithCache<OdometerRecord>(
+    fetchFn: () => repository.getOdometerRecords(
+      serverUrl: credentials.serverUrl,
+      username: credentials.username,
+      password: credentials.password,
+      vehicleId: vehicleId,
+    ),
+    cacheKey: cacheKey,
+    fromJson: (json) => OdometerRecord.fromJson(json),
+    toJson: (record) => record.toJson(),
   );
 });
 
@@ -27,17 +37,13 @@ final latestOdometerProvider = FutureProvider.family<int, int>((ref, vehicleId) 
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   return await repository.getLatestOdometer(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     vehicleId: vehicleId,
   );
 });
@@ -51,17 +57,13 @@ final addOdometerProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   await repository.addOdometerRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     vehicleId: params.vehicleId,
     date: params.date,
     odometer: params.odometer,
@@ -83,19 +85,15 @@ final updateOdometerProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   // Get vehicle ID from the record (would need to fetch it or pass it)
   // For now, we'll invalidate all odometer providers
   await repository.updateOdometerRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     id: params.id,
     date: params.date,
     odometer: params.odometer,
@@ -115,17 +113,13 @@ final deleteOdometerProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   await repository.deleteOdometerRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     id: params.id,
   );
   

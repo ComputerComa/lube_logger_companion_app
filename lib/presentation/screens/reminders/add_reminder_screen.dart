@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lube_logger_companion_app/core/utils/validators.dart';
 import 'package:lube_logger_companion_app/data/models/reminder.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
+import 'package:lube_logger_companion_app/providers/reminder_provider.dart';
 import 'package:lube_logger_companion_app/services/notification_service.dart';
 import 'package:intl/intl.dart';
 
@@ -56,17 +57,25 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
       return;
     }
 
-    // Note: The API doesn't have an add reminder endpoint in the Postman collection
-    // This is a placeholder implementation
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Reminder functionality requires API endpoint implementation'),
-      ),
-    );
+    if (_selectedVehicleId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a vehicle')),
+      );
+      return;
+    }
 
-    // TODO: Implement when API endpoint is available
-    // For now, we'll just schedule the notification
-    if (_selectedVehicleId != null) {
+    try {
+      await ref.read(addReminderProvider((
+        vehicleId: _selectedVehicleId!,
+        date: _selectedDate,
+        description: _titleController.text,
+        urgency: _selectedUrgency,
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        metric: null,
+        dueOdometer: null,
+      )).future);
+
+      // Schedule notification for the reminder
       final reminder = Reminder(
         id: DateTime.now().millisecondsSinceEpoch,
         vehicleId: _selectedVehicleId!,
@@ -75,14 +84,19 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
         urgency: _selectedUrgency,
         notes: _notesController.text.isNotEmpty ? _notesController.text : null,
       );
-
       await NotificationService.scheduleReminderNotification(reminder);
-      
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder notification scheduled')),
+          const SnackBar(content: Text('Reminder added successfully')),
         );
         context.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
       }
     }
   }

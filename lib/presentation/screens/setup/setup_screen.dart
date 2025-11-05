@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:lube_logger_companion_app/core/utils/validators.dart';
 import 'package:lube_logger_companion_app/presentation/routing/app_router.dart';
 import 'package:lube_logger_companion_app/providers/auth_provider.dart';
+import 'package:lube_logger_companion_app/services/storage_service.dart';
 
 class SetupScreen extends ConsumerStatefulWidget {
   const SetupScreen({super.key});
@@ -18,6 +19,30 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  void _loadSavedCredentials() {
+    // Load saved credentials from storage
+    final serverUrl = StorageService.getServerUrl();
+    final username = StorageService.getUsername();
+    final password = StorageService.getPassword();
+    
+    // Pre-populate text fields with saved values
+    if (serverUrl != null) {
+      _serverUrlController.text = serverUrl;
+    }
+    if (username != null) {
+      _usernameController.text = username;
+    }
+    if (password != null) {
+      _passwordController.text = password;
+    }
+  }
 
   @override
   void dispose() {
@@ -55,9 +80,37 @@ class _SetupScreenState extends ConsumerState<SetupScreen> {
     }
   }
 
+  bool _hasCredentials() {
+    final serverUrl = StorageService.getServerUrl();
+    final username = StorageService.getUsername();
+    final password = StorageService.getPassword();
+    return serverUrl != null && serverUrl.isNotEmpty &&
+           username != null && username.isNotEmpty &&
+           password != null && password.isNotEmpty;
+  }
+
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authStateProvider);
+    
+    // If credentials exist in storage, setup is already complete - redirect to home
+    if (_hasCredentials()) {
+      // Use postFrameCallback to ensure redirect happens after build
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && context.mounted) {
+          context.go(AppRoutes.home);
+        }
+      });
+      // Show loading while redirecting
+      return Scaffold(
+        appBar: AppBar(
+          title: const Text('Setup'),
+        ),
+        body: const Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
 
     return Scaffold(
       appBar: AppBar(

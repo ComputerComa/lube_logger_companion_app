@@ -1,24 +1,34 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lube_logger_companion_app/data/models/fuel_record.dart';
 import 'package:lube_logger_companion_app/providers/auth_provider.dart';
+import 'package:lube_logger_companion_app/providers/auth_helpers.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
+import 'package:lube_logger_companion_app/services/cached_data_helper.dart';
 
 final fuelRecordsProvider = FutureProvider.family<List<FuelRecord>, int>((ref, vehicleId) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
-  return await repository.getFuelRecords(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
-    vehicleId: vehicleId,
+  final cacheKey = CachedDataHelper.vehicleCacheKey(
+    'fuel_records',
+    vehicleId,
+    credentials.serverUrl,
+    credentials.username,
+  );
+  
+  return await CachedDataHelper.fetchWithCache<FuelRecord>(
+    fetchFn: () => repository.getFuelRecords(
+      serverUrl: credentials.serverUrl,
+      username: credentials.username,
+      password: credentials.password,
+      vehicleId: vehicleId,
+    ),
+    cacheKey: cacheKey,
+    fromJson: (json) => FuelRecord.fromJson(json),
+    toJson: (record) => record.toJson(),
   );
 });
 
@@ -36,17 +46,13 @@ final addFuelProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   await repository.addFuelRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     vehicleId: params.vehicleId,
     date: params.date,
     odometer: params.odometer,
@@ -73,17 +79,13 @@ final updateFuelProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   await repository.updateFuelRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     id: params.id,
     date: params.date,
     odometer: params.odometer,
@@ -103,17 +105,13 @@ final deleteFuelProvider = FutureProvider.family<void, ({
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
   
-  if (!authState.isAuthenticated ||
-      authState.serverUrl == null ||
-      authState.username == null ||
-      authState.password == null) {
-    throw Exception('Not authenticated');
-  }
+  // Get credentials from storage
+  final credentials = getCredentials(authState);
   
   await repository.deleteFuelRecord(
-    serverUrl: authState.serverUrl!,
-    username: authState.username!,
-    password: authState.password!,
+    serverUrl: credentials.serverUrl,
+    username: credentials.username,
+    password: credentials.password,
     id: params.id,
   );
   

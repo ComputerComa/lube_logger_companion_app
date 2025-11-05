@@ -31,18 +31,6 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Reminders'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              context.push(
-                _selectedVehicleId != null
-                    ? '${AppRoutes.addReminder}?vehicleId=$_selectedVehicleId'
-                    : AppRoutes.addReminder,
-              );
-            },
-          ),
-        ],
       ),
       body: vehiclesAsync.when(
         data: (vehicles) {
@@ -100,6 +88,17 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push(
+            _selectedVehicleId != null
+                ? '${AppRoutes.addReminder}?vehicleId=$_selectedVehicleId'
+                : AppRoutes.addReminder,
+          );
+        },
+        tooltip: 'Add Reminder',
+        child: const Icon(Icons.add),
       ),
     );
   }

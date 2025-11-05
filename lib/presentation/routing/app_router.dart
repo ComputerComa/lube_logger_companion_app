@@ -21,8 +21,18 @@ import 'package:lube_logger_companion_app/presentation/screens/upgrade/add_upgra
 import 'package:lube_logger_companion_app/presentation/screens/tax/tax_list_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/tax/add_tax_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/info/info_screen.dart';
-import 'package:lube_logger_companion_app/providers/auth_provider.dart';
+import 'package:lube_logger_companion_app/presentation/screens/settings/settings_screen.dart';
 import 'package:lube_logger_companion_app/services/storage_service.dart';
+
+/// Helper function to check if setup credentials exist in storage
+bool _hasSetupCredentials() {
+  final serverUrl = StorageService.getServerUrl();
+  final username = StorageService.getUsername();
+  final password = StorageService.getPassword();
+  return serverUrl != null && serverUrl.isNotEmpty &&
+         username != null && username.isNotEmpty &&
+         password != null && password.isNotEmpty;
+}
 
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -47,11 +57,12 @@ class AppRoutes {
   static const String tax = '/tax';
   static const String addTax = '/tax/add';
   static const String info = '/info';
+  static const String settings = '/settings';
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
-  // Check setup status synchronously from storage
-  final isSetupComplete = StorageService.isSetupComplete();
+  // Check if setup credentials exist in storage (synchronous and reliable)
+  final hasCredentials = _hasSetupCredentials();
   final isWelcomeShown = StorageService.isWelcomeShown();
   
   // Determine initial location based on setup status
@@ -60,35 +71,24 @@ final routerProvider = Provider<GoRouter>((ref) {
   if (!isWelcomeShown) {
     // Show welcome screen for new users (first time)
     initialLocation = AppRoutes.welcome;
-  } else if (isSetupComplete) {
-    // If setup is complete, start at home (redirect will handle auth check)
+  } else if (hasCredentials) {
+    // If credentials exist, setup is complete - go to home
     initialLocation = AppRoutes.home;
   } else {
-    // Welcome shown but setup not complete - go to setup
+    // Welcome shown but no credentials - go to setup
     initialLocation = AppRoutes.setup;
   }
   
   return GoRouter(
     initialLocation: initialLocation,
     redirect: (context, state) {
-      // Only check auth state after providers are initialized
+      // Check credentials synchronously from storage
+      final hasCredentials = _hasSetupCredentials();
       final isWelcomeShown = StorageService.isWelcomeShown();
-      final isSetupComplete = StorageService.isSetupComplete();
       
       // If we're on welcome and it's already been shown, redirect to appropriate screen
       if (state.uri.path == AppRoutes.welcome && isWelcomeShown) {
-        if (isSetupComplete) {
-          // Try to get auth state, but don't fail if not ready
-          try {
-            final authState = ref.read(authStateProvider);
-            return authState.isAuthenticated ? AppRoutes.home : AppRoutes.setup;
-          } catch (e) {
-            // Provider not ready yet, go to setup
-            return AppRoutes.setup;
-          }
-        } else {
-          return AppRoutes.setup;
-        }
+        return hasCredentials ? AppRoutes.home : AppRoutes.setup;
       }
       
       // If trying to access home/setup without welcome shown, show welcome first
@@ -98,16 +98,14 @@ final routerProvider = Provider<GoRouter>((ref) {
         return AppRoutes.welcome;
       }
       
-      // If setup is complete and trying to access home, check auth
-      if (state.uri.path == AppRoutes.home && isSetupComplete) {
-        try {
-          final authState = ref.read(authStateProvider);
-          if (!authState.isAuthenticated) {
-            return AppRoutes.setup;
-          }
-        } catch (e) {
-          // Provider not ready, allow through (will show loading state)
-        }
+      // If trying to access setup but credentials exist, redirect to home
+      if (state.uri.path == AppRoutes.setup && hasCredentials) {
+        return AppRoutes.home;
+      }
+      
+      // If trying to access home but no credentials, redirect to setup
+      if (state.uri.path == AppRoutes.home && !hasCredentials) {
+        return AppRoutes.setup;
       }
       
       return null; // No redirect needed
@@ -278,6 +276,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: AppRoutes.info,
         builder: (context, state) => const InfoScreen(),
+      ),
+      GoRoute(
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
       ),
     ],
   );

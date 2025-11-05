@@ -31,18 +31,6 @@ class _FuelListScreenState extends ConsumerState<FuelListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Fuel Records'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            onPressed: () {
-              context.push(
-                _selectedVehicleId != null
-                    ? '${AppRoutes.addFuel}?vehicleId=$_selectedVehicleId'
-                    : AppRoutes.addFuel,
-              );
-            },
-          ),
-        ],
       ),
       body: vehiclesAsync.when(
         data: (vehicles) {
@@ -103,6 +91,17 @@ class _FuelListScreenState extends ConsumerState<FuelListScreen> {
             ],
           ),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          context.push(
+            _selectedVehicleId != null
+                ? '${AppRoutes.addFuel}?vehicleId=$_selectedVehicleId'
+                : AppRoutes.addFuel,
+          );
+        },
+        tooltip: 'Add Fuel Entry',
+        child: const Icon(Icons.add),
       ),
     );
   }

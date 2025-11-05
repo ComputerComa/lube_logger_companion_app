@@ -51,4 +51,28 @@ class StorageService {
   static Future<bool> clearAll() async {
     return await _prefs?.clear() ?? false;
   }
+  
+  // Polling configuration
+  static const String _keyPollingEnabled = 'polling_enabled';
+  static const String _keyPollingInterval = 'polling_interval';
+  
+  static const int defaultPollingInterval = 60; // 60 seconds default
+  
+  static Future<bool> setPollingEnabled(bool enabled) async {
+    return await _prefs?.setBool(_keyPollingEnabled, enabled) ?? false;
+  }
+  
+  static Future<bool> isPollingEnabled() async {
+    return _prefs?.getBool(_keyPollingEnabled) ?? true; // Default to enabled
+  }
+  
+  static Future<bool> setPollingInterval(int intervalSeconds) async {
+    // Ensure minimum interval of 10 seconds
+    final safeInterval = intervalSeconds < 10 ? 10 : intervalSeconds;
+    return await _prefs?.setInt(_keyPollingInterval, safeInterval) ?? false;
+  }
+  
+  static Future<int> getPollingInterval() async {
+    return _prefs?.getInt(_keyPollingInterval) ?? defaultPollingInterval;
+  }
 }

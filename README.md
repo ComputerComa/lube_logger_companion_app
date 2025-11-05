@@ -10,3 +10,19 @@ You will need to have your instance publicly available (Don't forget password Pr
 
 This app is very much still in development so expect new features, breaking changes, etc. 
 The ultimate goal is to be as close as possible feature wise as the Web App. This may not be possible in all instances. 
+
+
+# Currently implemented Features
+- Login 
+- Vehicle Info / Statistics
+- View/Add Odometer, Fuel, Reminders, and Statistics
+
+# Planned Features Remaining For 1.0 Release
+- Local Push Notifications for Reminders.
+- Automatic Additional Fields when defined on the server. 
+
+
+# Planned Future Features / Ideas
+- Ability To pull Mileage from OBDII Monitoring Tools
+- Widgets for Quick Statistics on the Home Screen
+

@@ -14,7 +14,7 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
-              // TODO: Add settings screen
+              context.push(AppRoutes.settings);
             },
           ),
         ],

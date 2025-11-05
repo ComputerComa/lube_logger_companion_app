@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lube_logger_companion_app/services/storage_service.dart';
 import 'package:lube_logger_companion_app/services/auth_service.dart';
+import 'package:lube_logger_companion_app/services/cache_service.dart';
 import 'package:lube_logger_companion_app/data/api/lubelogger_api_client.dart';
 
 class AuthState {
@@ -45,23 +46,19 @@ class AuthNotifier extends Notifier<AuthState> {
   
   @override
   AuthState build() {
-    _loadSavedCredentials();
-    return AuthState();
-  }
-  
-  Future<void> _loadSavedCredentials() async {
+    // Load credentials synchronously from storage
     final serverUrl = StorageService.getServerUrl();
     final username = StorageService.getUsername();
     final password = StorageService.getPassword();
     
-    if (serverUrl != null && username != null && password != null) {
-      state = state.copyWith(
-        serverUrl: serverUrl,
-        username: username,
-        password: password,
-        isAuthenticated: StorageService.isSetupComplete(),
-      );
-    }
+    // If credentials exist, use them - no need for "authenticated" state
+    return AuthState(
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      // If credentials exist, consider them ready to use
+      isAuthenticated: serverUrl != null && username != null && password != null,
+    );
   }
   
   Future<bool> login({
@@ -126,6 +123,8 @@ class AuthNotifier extends Notifier<AuthState> {
   
   Future<void> logout() async {
     await StorageService.clearAll();
+    // Clear cached data on logout
+    await CacheService.clearAll();
     state = AuthState();
   }
 }
