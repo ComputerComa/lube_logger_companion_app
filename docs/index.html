@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lube Logger Companion App</title>
+    <meta
+      name="description"
+      content="Companion Flutter app for the self-hosted LubeLogger platform. Track vehicle maintenance, fuel records, and fleet analytics on the go."
+    />
+    <!-- Bootstrap 5 -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="assets/css/styles.css" />
+    <link rel="icon" type="image/x-icon" href="assets/images/favicon.ico" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body data-bs-spy="scroll" data-bs-target="#mainNav" data-bs-offset="80">
+    <nav id="mainNav" class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm fixed-top">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="#top">
+          <img src="assets/images/favicon.ico" alt="App Icon" class="me-2" style="height: 1.5em; vertical-align: middle;" />Lube Logger Companion
+        </a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+            <li class="nav-item"><a class="nav-link" href="#architecture">Architecture</a></li>
+            <li class="nav-item"><a class="nav-link" href="#screens">Screenshots</a></li>
+            <li class="nav-item"><a class="nav-link" href="#roadmap">Roadmap</a></li>
+            <li class="nav-item"><a class="nav-link" href="#contact">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <header id="top" class="hero-section">
+      <div class="container text-center text-light">
+        <span class="badge rounded-pill hero-pill">Flutter • Riverpod • Offline-first</span>
+        <h1 class="display-4 fw-bold mt-4">Keep every vehicle insight at your fingertips.</h1>
+        <p class="lead mx-auto mt-3 hero-copy">
+          The Lube Logger Companion App pairs with your self-hosted backend to track fuel entries, service history,
+          maintenance plans, and fleet health—online or off. Built with Flutter, Riverpod. Currently in development. Contributions welcome!
+        </p>
+        <div class="hero-actions mt-4">
+          <a
+            class="btn btn-accent btn-lg px-4"
+            href="https://github.com/ComputerComa/lube_logger_companion_app"
+            target="_blank"
+            rel="noopener"
+          >
+            View Source →
+          </a>
+          <a class="btn btn-outline-light btn-lg px-4" href="#features">Explore Features</a>
+          <p class="text-secondary">beta Access coming soon for Google Play and TestFlight for IOS 🚧</p>
+        </div>
+       
+      </div>
+    </header>
+
+    <main>
+      <section id="features" class="py-5 bg-body-secondary">
+        <div class="container">
+          <div class="text-center mb-5">
+            <h2 class="section-title">Why mechanics and managers love it</h2>
+            <p class="section-lead mx-auto">
+              Purpose-built UI paired with a resilient offline-first architecture delivers the reliability the garage floor requires.
+            </p>
+          </div>
+          <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">📊</div>
+                <h3 class="feature-title">Insightful analytics</h3>
+                <p>
+                  `fl_chart` powered dashboards surface MPG, fuel spend, consumption trends, and plan progress in engaging visualizations.
+                </p>
+              </article>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">📱</div>
+                <h3 class="feature-title">Swipe card UX</h3>
+                <p>
+                  Swipeable vehicle cards surface cached imagery, quick stats, plan statuses, and context menus for everyday actions.
+                </p>
+              </article>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">📡</div>
+                <h3 class="feature-title">Smart polling</h3>
+                <p>
+                  Configurable refresh intervals keep reminders, fuel records, and service logs synced without overloading the server.
+                </p>
+              </article>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">📝</div>
+                <h3 class="feature-title">Dynamic extra fields</h3>
+                <p>
+                  Auto-generated forms map backend-driven schemas to UI components, handling text, numeric, boolean, and date inputs.
+                </p>
+              </article>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">🌐</div>
+                <h3 class="feature-title">Offline ready</h3>
+                <p>
+                  Cached datasets and connection-aware providers ensure the team can review the latest records even when disconnected.
+                </p>
+              </article>
+            </div>
+            <div class="col-md-6 col-lg-4">
+              <article class="feature-card h-100">
+                <div class="feature-icon">🎨</div>
+                <h3 class="feature-title">Adaptive theming</h3>
+                <p>
+                  Built-in light, dark, and system modes keep the interface legible in shop bays, offices, and field work.
+                </p>
+              </article>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="architecture" class="py-5">
+        <div class="container">
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <div class="detail-card h-100">
+                <span class="badge rounded-pill text-bg-info-subtle text-uppercase small mb-3">Architecture</span>
+                <h3 class="detail-title">Flutter + Riverpod foundation</h3>
+                <p>
+                  Feature modules rely on Riverpod providers to orchestrate API calls, caching, and optimistic updates. Domain models capture every record type—fuel, service, repair, tax, upgrade, and plan entries—ensuring data parity with the LubeLogger backend.
+                </p>
+                <ul class="list-unstyled small">
+                  <li>• GoRouter handles deep-linking and setup skips</li>
+                  <li>• Cache helpers wrap SharedPreferences and connectivity checks</li>
+                  <li>• Polling service manages background refresh and invalidation</li>
+                </ul>
+              </div>
+            </div>
+            <div class="col-lg-6">
+              <div class="detail-card h-100">
+                <span class="badge rounded-pill text-bg-info-subtle text-uppercase small mb-3">API Coverage</span>
+                <h3 class="detail-title">Repository orchestrated clients</h3>
+                <p>
+                  The `LubeLoggerRepository` centralizes CRUD operations for every endpoint and surfaces helpers for version checks, plan normalization, and extra field hydration across forms.
+                </p>
+                <ul class="list-unstyled small">
+                  <li>• Basic auth via secure storage and custom HTTP client</li>
+                  <li>• Offline fallbacks keep cached content accessible</li>
+                  <li>• Version provider powers “Check for updates” UI</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      
+      <section id="roadmap" class="py-5">
+        <div class="container">
+          <div class="detail-card">
+            <div class="text-center mb-4">
+              <h2 class="section-title">Roadmap</h2>
+              <p class="section-lead mx-auto">
+                The companion app is ever evolving. Track what’s shipped and what’s next.
+              </p>
+            </div>
+            <ul class="timeline list-unstyled mb-0">
+              <li><strong>✅ Q3 2025:</strong> Offline caching, swipeable vehicle cards, dynamic extra fields.</li>
+              <li><strong>✅ Q4 2025:</strong> Plan records stack, charts, theme selector, context menus.</li>
+              <li><strong>🔄 In Progress:</strong> GitHub Pages documentation & marketing site (you’re looking at it!).</li>
+              <li><strong>🧭 Up Next:</strong> Push notification reminder integration, multi-tenant backend support.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section id="cta" class="py-5 bg-dark text-light">
+        <div class="container text-center">
+          <div class="cta-card mx-auto">
+            <h2 class="mb-3">Want to help contribute?</h2>
+            Check out the <a href="https://github.com/ComputerComa/lube_logger_companion_app" target="_blank" rel="noopener">GitHub repository</a> for more information.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contact" class="py-5 footer bg-dark text-light">
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-5">
+            <h5 class="fw-semibold mb-2">Lube Logger Companion App</h5>
+            <p class="text-secondary mb-0">
+              Companion Flutter app for managing vehicles, service history, fuel logs, and maintenance plans.
+            </p>
+          </div>
+          <div class="col-6 col-lg-3">
+            <h6 class="text-uppercase small fw-semibold text-secondary">Links</h6>
+            <ul class="list-unstyled">
+              <li>
+                <a class="link-light link-opacity-75-hover" href="https://github.com/ComputerComa/lube_logger_companion_app" target="_blank" rel="noopener">Source Code</a>
+              </li>
+              <li>
+                <a class="link-light link-opacity-75-hover" href="https://github.com/ComputerComa/lube_logger_companion_app/issues" target="_blank" rel="noopener">Issue Tracker</a>
+              </li>
+            </ul>
+          </div>
+          <div class="col-6 col-lg-4">
+            <h6 class="text-uppercase small fw-semibold text-secondary">Contact</h6>
+            <ul class="list-unstyled">
+              <li><a class="link-light link-opacity-75-hover" href="mailto:68386555+ComputerComa@users.noreply.github.com">Email</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="pt-4 mt-4 border-top border-secondary-subtle text-center">
+          <small class="text-secondary">© <span id="currentYear"></span> ComputerComa. Built with Bootstrap 5.</small>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Bootstrap Bundle -->
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+      crossorigin="anonymous"
+    ></script>
+    <script>
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    </script>
+  </body>
+</html>
+

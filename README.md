@@ -1,34 +1,39 @@
-# Lube Logger Companion App — GitHub Pages Site
+## Lube Logger Companion App – Static Site
 
-This branch scaffolds a Jekyll-powered marketing/documentation site for the Lube Logger Companion App. The site lives under the `docs/` directory so it can be published with GitHub Pages (Project → Settings → Pages → Branch `gh-pages-site`, folder `/docs`).
+This branch hosts a **pure HTML/CSS/JS** marketing site for the Lube Logger Companion App. It uses Bootstrap 5 from a CDN and lives entirely inside the `docs/` folder so it can be published with GitHub Pages (Project Settings → Pages → Branch `gh-pages-site`, folder `/docs`).
 
-## Local development
+### Structure
 
-1. Ensure you have Ruby and Bundler installed (Ruby 3.x recommended).
-2. From the repo root:
+```
+docs/
+├── index.html          # Landing page (pure HTML + Bootstrap 5)
+└── assets/
+    └── css/
+        └── styles.css  # Custom accents layered on top of Bootstrap
+```
 
-   ```bash
-   bundle init    # only needed the first time
-   bundle add jekyll webrick
-   bundle exec jekyll serve --source docs --livereload
-   ```
+### Local Preview
 
-3. Open <http://localhost:4000> to preview changes. The livereload flag hot-reloads edits to layouts, content, and CSS.
+Because it’s completely static, you can open `docs/index.html` directly in a browser or serve it with any simple HTTP server, for example:
 
-> **Note:** If you already have a global Jekyll install you can simply run `jekyll serve --source docs`.
+```bash
+python -m http.server --directory docs 8080
+```
 
-## Customization checklist
+Then visit `http://localhost:8080`.
 
-- Update `docs/_config.yml` with your GitHub handle, repository name, and contact links.
-- Replace placeholder screenshots referenced in `docs/index.md` with real images under `docs/assets/images/`.
-- Adjust copy, roadmap milestones, and feature highlights to match your latest release.
-- Configure GitHub Pages (Settings → Pages) to serve from this branch and the `/docs` folder.
+### Customization Checklist
 
-## Deploying
+- Swap placeholder screenshots in the “Preview the experience” section (`docs/assets/images/...`).
+- Update contact links (footer + CTA) as needed.
+- Adjust copy, roadmap items, and feature descriptions to match the latest release.
 
-1. Commit updates on the `gh-pages-site` branch.
-2. Push to GitHub: `git push origin gh-pages-site`.
-3. GitHub Pages will build and publish automatically. The site will be available at `https://<username>.github.io/<repo>/`.
+### Deploying to GitHub Pages
 
-Happy documenting!
+1. Commit and push the `gh-pages-site` branch.
+2. In your GitHub repository, go to **Settings → Pages**.
+3. Select the branch (`gh-pages-site`) and folder (`/docs`).
+4. Save. GitHub Pages will build and publish automatically.
+
+Enjoy showcasing the app! 🎉
 
