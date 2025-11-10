@@ -130,10 +130,9 @@ class _FuelListScreenState extends ConsumerState<FuelListScreen> {
               final record = sortedRecords[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: FuelEntryCard(
+                  record: record,
                   onLongPress: () => _showFuelEntryActions(context, record, vehicleId),
-                  child: FuelEntryCard(record: record),
                 ),
               );
             },

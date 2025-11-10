@@ -728,7 +728,10 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
     return Column(
       children: [
         for (final record in sortedRecords) ...[
-          OdometerEntryCard(record: record),
+          OdometerEntryCard(
+            record: record,
+            onLongPress: () => _showOdometerActions(context, record),
+          ),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 4),
@@ -759,7 +762,10 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
     return Column(
       children: [
         for (final record in sortedRecords) ...[
-          FuelEntryCard(record: record),
+          FuelEntryCard(
+            record: record,
+            onLongPress: () => _showFuelActions(context, record),
+          ),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 4),
@@ -790,7 +796,10 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
     return Column(
       children: [
         for (final record in sortedRecords) ...[
-          ServiceRecordCard(record: record),
+          ServiceRecordCard(
+            record: record,
+            onLongPress: () => _showServiceActions(context, record),
+          ),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 4),
@@ -821,7 +830,10 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
     return Column(
       children: [
         for (final reminder in sortedReminders) ...[
-          ReminderCard(reminder: reminder),
+          ReminderCard(
+            reminder: reminder,
+            onLongPress: () => _showReminderActions(context, reminder),
+          ),
           const SizedBox(height: 12),
         ],
         const SizedBox(height: 4),
@@ -831,6 +843,294 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen> {
           label: const Text('Create Reminder'),
         ),
       ],
+    );
+  }
+
+  void _showOdometerActions(BuildContext context, OdometerRecord record) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Entry'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editOdometer}?vehicleId=${widget.vehicleId}',
+                  extra: record,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Entry'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final scaffoldMessenger = ScaffoldMessenger.of(rootContext);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Delete Odometer Entry'),
+                    content: const Text('Are you sure you want to delete this odometer entry?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteOdometerProvider((
+                      id: record.id,
+                      vehicleId: widget.vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ref.invalidate(odometerRecordsProvider(widget.vehicleId));
+                    ref.invalidate(latestOdometerValueProvider(widget.vehicleId));
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Odometer entry deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Error deleting entry: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showFuelActions(BuildContext context, FuelRecord record) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Entry'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editFuel}?vehicleId=${widget.vehicleId}',
+                  extra: record,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Entry'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final scaffoldMessenger = ScaffoldMessenger.of(rootContext);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Delete Fuel Entry'),
+                    content: const Text('Are you sure you want to delete this fuel entry?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteFuelProvider((
+                      id: record.id,
+                      vehicleId: widget.vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ref.invalidate(fuelRecordsProvider(widget.vehicleId));
+                    ref.invalidate(statisticsProvider(widget.vehicleId));
+                    ref.invalidate(latestFuelRecordProvider(widget.vehicleId));
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Fuel entry deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Error deleting entry: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showServiceActions(BuildContext context, ServiceRecord record) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Record'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editService}?vehicleId=${widget.vehicleId}',
+                  extra: record,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Record'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final scaffoldMessenger = ScaffoldMessenger.of(rootContext);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Delete Service Record'),
+                    content: const Text('Are you sure you want to delete this service record?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteServiceProvider((
+                      id: record.id,
+                      vehicleId: widget.vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ref.invalidate(serviceRecordsProvider(widget.vehicleId));
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Service record deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Error deleting record: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReminderActions(BuildContext context, Reminder reminder) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Reminder'),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editReminder}?vehicleId=${widget.vehicleId}',
+                  extra: reminder,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Reminder'),
+              onTap: () async {
+                Navigator.pop(sheetContext);
+                final scaffoldMessenger = ScaffoldMessenger.of(rootContext);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (dialogContext) => AlertDialog(
+                    title: const Text('Delete Reminder'),
+                    content: const Text('Are you sure you want to delete this reminder?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(dialogContext, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteReminderProvider((
+                      id: reminder.id,
+                      vehicleId: widget.vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ref.invalidate(remindersProvider(widget.vehicleId));
+                    ref.invalidate(upcomingRemindersProvider(widget.vehicleId));
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(content: Text('Reminder deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    scaffoldMessenger.showSnackBar(
+                      SnackBar(content: Text('Error deleting reminder: $e')),
+                    );
+                  }
+                }
+              },
+            ),
+          ],
+        ),
+      ),
     );
   }
 

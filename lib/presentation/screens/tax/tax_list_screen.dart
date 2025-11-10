@@ -129,10 +129,9 @@ class _TaxListScreenState extends ConsumerState<TaxListScreen> {
               final record = sortedRecords[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: TaxRecordCard(
+                  record: record,
                   onLongPress: () => _showTaxActions(context, record, vehicleId),
-                  child: TaxRecordCard(record: record),
                 ),
               );
             },

@@ -131,10 +131,9 @@ class _OdometerListScreenState extends ConsumerState<OdometerListScreen> {
               final record = sortedRecords[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: OdometerEntryCard(
+                  record: record,
                   onLongPress: () => _showOdometerActions(context, record, vehicleId),
-                  child: OdometerEntryCard(record: record),
                 ),
               );
             },

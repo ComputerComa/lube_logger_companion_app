@@ -88,14 +88,13 @@ class _PlanListScreenState extends ConsumerState<PlanListScreen> {
                                 physics: const AlwaysScrollableScrollPhysics(),
                                 itemBuilder: (context, index) {
                                   final record = records[index];
-                                  return GestureDetector(
-                                    behavior: HitTestBehavior.opaque,
+                                  return _PlanRecordCard(
+                                    record: record,
                                     onLongPress: () => _showPlanActions(
                                       context,
                                       record,
                                       _selectedVehicleId!,
                                     ),
-                                    child: _PlanRecordCard(record: record),
                                   );
                                 },
                                 separatorBuilder: (context, index) => const SizedBox(height: 12),
@@ -211,8 +210,12 @@ class _PlanListScreenState extends ConsumerState<PlanListScreen> {
 
 class _PlanRecordCard extends ConsumerWidget {
   final PlanRecord record;
+  final VoidCallback? onLongPress;
 
-  const _PlanRecordCard({required this.record});
+  const _PlanRecordCard({
+    required this.record,
+    this.onLongPress,
+  });
 
   Color _priorityColor(BuildContext context) {
     switch (record.priority) {
@@ -257,62 +260,70 @@ class _PlanRecordCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    record.description,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                  ),
+    final content = Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  record.description,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                      ),
                 ),
-                Text(
-                  '\$${record.cost.toStringAsFixed(2)}',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 4,
-              children: [
-                Chip(
-                  label: Text(_typeLabel()),
-                  avatar: const Icon(Icons.category, size: 18),
-                ),
-                Chip(
-                  label: Text(
-                    record.priority == PlanRecordPriority.unknown
-                        ? 'Priority: Unknown'
-                        : 'Priority: ${_priorityLabel()}',
-                  ),
-                  backgroundColor: _priorityColor(context).withValues(alpha: 0.1),
-                  labelStyle: TextStyle(color: _priorityColor(context)),
-                ),
-                Chip(
-                  label: Text('Progress: ${_progressLabel()}'),
-                  avatar: const Icon(Icons.timeline, size: 18),
-                ),
-              ],
-            ),
-            if (record.notes != null && record.notes!.isNotEmpty) ...[
-              const SizedBox(height: 12),
+              ),
               Text(
-                record.notes!,
-                style: Theme.of(context).textTheme.bodyMedium,
+                '\$${record.cost.toStringAsFixed(2)}',
+                style: Theme.of(context).textTheme.titleMedium,
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 4,
+            children: [
+              Chip(
+                label: Text(_typeLabel()),
+                avatar: const Icon(Icons.category, size: 18),
+              ),
+              Chip(
+                label: Text(
+                  record.priority == PlanRecordPriority.unknown
+                      ? 'Priority: Unknown'
+                      : 'Priority: ${_priorityLabel()}',
+                ),
+                backgroundColor: _priorityColor(context).withValues(alpha: 0.1),
+                labelStyle: TextStyle(color: _priorityColor(context)),
+              ),
+              Chip(
+                label: Text('Progress: ${_progressLabel()}'),
+                avatar: const Icon(Icons.timeline, size: 18),
+              ),
+            ],
+          ),
+          if (record.notes != null && record.notes!.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            Text(
+              record.notes!,
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
-        ),
+        ],
       ),
+    );
+
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: onLongPress == null
+          ? content
+          : InkWell(
+              onLongPress: onLongPress,
+              child: content,
+            ),
     );
   }
 

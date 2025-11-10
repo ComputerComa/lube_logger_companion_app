@@ -114,7 +114,7 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
         }
 
         final sortedReminders = List.from(reminders)
-          ..sort((a, b) => a.date.compareTo(b.date));
+          ..sort((a, b) => b.date.compareTo(a.date));
 
         return RefreshIndicator(
           onRefresh: () async {
@@ -127,10 +127,9 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
               final reminder = sortedReminders[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+                child: ReminderCard(
+                  reminder: reminder,
                   onLongPress: () => _showReminderActions(context, reminder, vehicleId),
-                  child: ReminderCard(reminder: reminder),
                 ),
               );
             },
