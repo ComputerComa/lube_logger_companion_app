@@ -5,6 +5,7 @@ import 'package:lube_logger_companion_app/presentation/routing/app_router.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/reminder_provider.dart';
 import 'package:lube_logger_companion_app/presentation/widgets/reminder_card.dart';
+import 'package:lube_logger_companion_app/data/models/reminder.dart';
 
 class RemindersListScreen extends ConsumerStatefulWidget {
   final int? initialVehicleId;
@@ -126,7 +127,10 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
               final reminder = sortedReminders[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: ReminderCard(reminder: reminder),
+                child: GestureDetector(
+                  onLongPress: () => _showReminderActions(context, reminder, vehicleId),
+                  child: ReminderCard(reminder: reminder),
+                ),
               );
             },
           ),
@@ -142,6 +146,78 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
             ElevatedButton(
               onPressed: () => ref.invalidate(remindersProvider(vehicleId)),
               child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showReminderActions(
+    BuildContext context,
+    Reminder reminder,
+    int? vehicleId,
+  ) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Reminder'),
+              onTap: () {
+                Navigator.pop(context);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editReminder}?vehicleId=${vehicleId ?? reminder.vehicleId}',
+                  extra: reminder,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Reminder'),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Reminder'),
+                    content: const Text('Are you sure you want to delete this reminder?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteReminderProvider((
+                      id: reminder.id,
+                      vehicleId: vehicleId ?? reminder.vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(content: Text('Reminder deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(content: Text('Error deleting reminder: $e')),
+                    );
+                  }
+                }
+              },
             ),
           ],
         ),

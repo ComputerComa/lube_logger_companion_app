@@ -4,12 +4,24 @@ import 'package:go_router/go_router.dart';
 import 'package:lube_logger_companion_app/core/utils/validators.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/upgrade_provider.dart';
+import 'package:lube_logger_companion_app/providers/extra_fields_provider.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field_definition.dart';
+import 'package:lube_logger_companion_app/data/models/upgrade_record.dart';
+import 'package:lube_logger_companion_app/presentation/widgets/extra_fields_form_section.dart';
 import 'package:intl/intl.dart';
 
 class AddUpgradeScreen extends ConsumerStatefulWidget {
   final int? vehicleId;
+  final UpgradeRecord? record;
 
-  const AddUpgradeScreen({super.key, this.vehicleId});
+  const AddUpgradeScreen({
+    super.key,
+    this.vehicleId,
+    this.record,
+  });
+
+  bool get isEditing => record != null;
 
   @override
   ConsumerState<AddUpgradeScreen> createState() => _AddUpgradeScreenState();
@@ -21,13 +33,28 @@ class _AddUpgradeScreenState extends ConsumerState<AddUpgradeScreen> {
   final _descriptionController = TextEditingController();
   final _costController = TextEditingController();
   final _notesController = TextEditingController();
+  final _extraFieldsKey = GlobalKey<ExtraFieldsFormSectionState>();
   DateTime _selectedDate = DateTime.now();
   int? _selectedVehicleId;
+  Map<String, String> _initialExtraFieldValues = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedVehicleId = widget.vehicleId;
+    final record = widget.record;
+    if (record != null) {
+      _selectedVehicleId = record.vehicleId;
+      _selectedDate = record.date;
+      _descriptionController.text = record.description;
+      _odometerController.text = record.odometer.toString();
+      _costController.text = record.cost.toStringAsFixed(2);
+      _notesController.text = record.notes ?? '';
+      _initialExtraFieldValues = {
+        for (final field in record.extraFields) field.name: field.value,
+      };
+    } else {
+      _selectedVehicleId = widget.vehicleId;
+    }
   }
 
   @override
@@ -66,21 +93,41 @@ class _AddUpgradeScreenState extends ConsumerState<AddUpgradeScreen> {
     }
 
     try {
-      await ref.read(addUpgradeProvider(
-        (
-          vehicleId: _selectedVehicleId!,
-          date: _selectedDate,
-          odometer: int.parse(_odometerController.text),
-          description: _descriptionController.text,
-          cost: double.parse(_costController.text),
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-          extraFields: null,
-        ),
-      ).future);
+      final extraFields =
+          _extraFieldsKey.currentState?.collectExtraFields() ?? <ExtraField>[];
+
+      final params = (
+        vehicleId: _selectedVehicleId!,
+        date: _selectedDate,
+        odometer: int.parse(_odometerController.text),
+        description: _descriptionController.text,
+        cost: double.parse(_costController.text),
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        extraFields: extraFields.isNotEmpty ? extraFields : null,
+      );
+
+      if (widget.isEditing) {
+        await ref.read(updateUpgradeProvider((
+          id: widget.record!.id,
+          date: params.date,
+          odometer: params.odometer,
+          description: params.description,
+          cost: params.cost,
+          notes: params.notes,
+          extraFields: params.extraFields,
+          vehicleId: params.vehicleId,
+        )).future);
+      } else {
+        await ref.read(addUpgradeProvider(params).future);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Upgrade record added successfully')),
+          SnackBar(
+            content: Text(widget.isEditing
+                ? 'Upgrade record updated successfully'
+                : 'Upgrade record added successfully'),
+          ),
         );
         context.pop();
       }
@@ -96,10 +143,11 @@ class _AddUpgradeScreenState extends ConsumerState<AddUpgradeScreen> {
   @override
   Widget build(BuildContext context) {
     final vehiclesAsync = ref.watch(vehiclesProvider);
+    final extraFieldsAsync = ref.watch(extraFieldDefinitionsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Upgrade Record'),
+        title: Text(widget.isEditing ? 'Edit Upgrade Record' : 'Add Upgrade Record'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -205,13 +253,44 @@ class _AddUpgradeScreenState extends ConsumerState<AddUpgradeScreen> {
                 ),
                 maxLines: 3,
               ),
+              const SizedBox(height: 16),
+              extraFieldsAsync.when(
+                data: (records) {
+                  final recordDefinition = records.firstWhere(
+                    (record) => record.recordType == 'UpgradeRecord',
+                    orElse: () => RecordExtraFields(
+                      recordType: 'UpgradeRecord',
+                      extraFields: const [],
+                    ),
+                  );
+
+                  if (recordDefinition.extraFields.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ExtraFieldsFormSection(
+                        key: _extraFieldsKey,
+                        definitions: recordDefinition.extraFields,
+                        title: 'Additional Upgrade Fields',
+                        initialValues: _initialExtraFieldValues,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Add Upgrade Record'),
+                child: Text(widget.isEditing ? 'Save Changes' : 'Add Upgrade Record'),
               ),
             ],
           ),

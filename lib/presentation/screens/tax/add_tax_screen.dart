@@ -4,12 +4,24 @@ import 'package:go_router/go_router.dart';
 import 'package:lube_logger_companion_app/core/utils/validators.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/tax_provider.dart';
+import 'package:lube_logger_companion_app/providers/extra_fields_provider.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field_definition.dart';
+import 'package:lube_logger_companion_app/data/models/tax_record.dart';
+import 'package:lube_logger_companion_app/presentation/widgets/extra_fields_form_section.dart';
 import 'package:intl/intl.dart';
 
 class AddTaxScreen extends ConsumerStatefulWidget {
   final int? vehicleId;
+  final TaxRecord? record;
 
-  const AddTaxScreen({super.key, this.vehicleId});
+  const AddTaxScreen({
+    super.key,
+    this.vehicleId,
+    this.record,
+  });
+
+  bool get isEditing => record != null;
 
   @override
   ConsumerState<AddTaxScreen> createState() => _AddTaxScreenState();
@@ -20,13 +32,27 @@ class _AddTaxScreenState extends ConsumerState<AddTaxScreen> {
   final _descriptionController = TextEditingController();
   final _costController = TextEditingController();
   final _notesController = TextEditingController();
+  final _extraFieldsKey = GlobalKey<ExtraFieldsFormSectionState>();
   DateTime _selectedDate = DateTime.now();
   int? _selectedVehicleId;
+  Map<String, String> _initialExtraFieldValues = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedVehicleId = widget.vehicleId;
+    final record = widget.record;
+    if (record != null) {
+      _selectedVehicleId = record.vehicleId;
+      _selectedDate = record.date;
+      _descriptionController.text = record.description;
+      _costController.text = record.cost.toStringAsFixed(2);
+      _notesController.text = record.notes ?? '';
+      _initialExtraFieldValues = {
+        for (final field in record.extraFields) field.name: field.value,
+      };
+    } else {
+      _selectedVehicleId = widget.vehicleId;
+    }
   }
 
   @override
@@ -64,20 +90,39 @@ class _AddTaxScreenState extends ConsumerState<AddTaxScreen> {
     }
 
     try {
-      await ref.read(addTaxProvider(
-        (
-          vehicleId: _selectedVehicleId!,
-          date: _selectedDate,
-          description: _descriptionController.text,
-          cost: double.parse(_costController.text),
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-          extraFields: null,
-        ),
-      ).future);
+      final extraFields =
+          _extraFieldsKey.currentState?.collectExtraFields() ?? <ExtraField>[];
+
+      final params = (
+        vehicleId: _selectedVehicleId!,
+        date: _selectedDate,
+        description: _descriptionController.text,
+        cost: double.parse(_costController.text),
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        extraFields: extraFields.isNotEmpty ? extraFields : null,
+      );
+
+      if (widget.isEditing) {
+        await ref.read(updateTaxProvider((
+          id: widget.record!.id,
+          date: params.date,
+          description: params.description,
+          cost: params.cost,
+          notes: params.notes,
+          extraFields: params.extraFields,
+          vehicleId: params.vehicleId,
+        )).future);
+      } else {
+        await ref.read(addTaxProvider(params).future);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Tax record added successfully')),
+          SnackBar(
+            content: Text(widget.isEditing
+                ? 'Tax record updated successfully'
+                : 'Tax record added successfully'),
+          ),
         );
         context.pop();
       }
@@ -93,10 +138,11 @@ class _AddTaxScreenState extends ConsumerState<AddTaxScreen> {
   @override
   Widget build(BuildContext context) {
     final vehiclesAsync = ref.watch(vehiclesProvider);
+    final extraFieldsAsync = ref.watch(extraFieldDefinitionsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Tax Record'),
+        title: Text(widget.isEditing ? 'Edit Tax Record' : 'Add Tax Record'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -187,13 +233,44 @@ class _AddTaxScreenState extends ConsumerState<AddTaxScreen> {
                 ),
                 maxLines: 3,
               ),
+              const SizedBox(height: 16),
+              extraFieldsAsync.when(
+                data: (records) {
+                  final recordDefinition = records.firstWhere(
+                    (record) => record.recordType == 'TaxRecord',
+                    orElse: () => RecordExtraFields(
+                      recordType: 'TaxRecord',
+                      extraFields: const [],
+                    ),
+                  );
+
+                  if (recordDefinition.extraFields.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ExtraFieldsFormSection(
+                        key: _extraFieldsKey,
+                        definitions: recordDefinition.extraFields,
+                        title: 'Additional Tax Fields',
+                        initialValues: _initialExtraFieldValues,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
               const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _handleSubmit,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Add Tax Record'),
+                child: Text(widget.isEditing ? 'Save Changes' : 'Add Tax Record'),
               ),
             ],
           ),

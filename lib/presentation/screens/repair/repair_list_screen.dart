@@ -5,6 +5,7 @@ import 'package:lube_logger_companion_app/presentation/routing/app_router.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/repair_provider.dart';
 import 'package:lube_logger_companion_app/presentation/widgets/repair_record_card.dart';
+import 'package:lube_logger_companion_app/data/models/repair_record.dart';
 
 class RepairListScreen extends ConsumerStatefulWidget {
   final int? initialVehicleId;
@@ -128,7 +129,10 @@ class _RepairListScreenState extends ConsumerState<RepairListScreen> {
               final record = sortedRecords[index];
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
-                child: RepairRecordCard(record: record),
+                child: GestureDetector(
+                  onLongPress: () => _showRepairActions(context, record, vehicleId),
+                  child: RepairRecordCard(record: record),
+                ),
               );
             },
           ),
@@ -144,6 +148,78 @@ class _RepairListScreenState extends ConsumerState<RepairListScreen> {
             ElevatedButton(
               onPressed: () => ref.invalidate(repairRecordsProvider(vehicleId)),
               child: const Text('Retry'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRepairActions(
+    BuildContext context,
+    RepairRecord record,
+    int vehicleId,
+  ) {
+    final rootContext = this.context;
+    showModalBottomSheet(
+      context: context,
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.edit),
+              title: const Text('Edit Record'),
+              onTap: () {
+                Navigator.pop(context);
+                if (!mounted) return;
+                rootContext.push(
+                  '${AppRoutes.editRepair}?vehicleId=$vehicleId',
+                  extra: record,
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete, color: Colors.red),
+              title: const Text('Delete Record'),
+              onTap: () async {
+                Navigator.pop(context);
+                final confirmed = await showDialog<bool>(
+                  context: rootContext,
+                  builder: (context) => AlertDialog(
+                    title: const Text('Delete Repair Record'),
+                    content: const Text('Are you sure you want to delete this repair record?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: const Text('Cancel'),
+                      ),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context, true),
+                        style: TextButton.styleFrom(foregroundColor: Colors.red),
+                        child: const Text('Delete'),
+                      ),
+                    ],
+                  ),
+                );
+                if (confirmed == true) {
+                  try {
+                    await ref.read(deleteRepairProvider((
+                      id: record.id,
+                      vehicleId: vehicleId,
+                    )).future);
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      const SnackBar(content: Text('Repair record deleted')),
+                    );
+                  } catch (e) {
+                    if (!mounted) return;
+                    ScaffoldMessenger.of(this.context).showSnackBar(
+                      SnackBar(content: Text('Error deleting record: $e')),
+                    );
+                  }
+                }
+              },
             ),
           ],
         ),

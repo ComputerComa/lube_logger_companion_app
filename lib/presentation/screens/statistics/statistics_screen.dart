@@ -320,16 +320,34 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
     String label,
     String value,
     IconData icon,
-    Color color, {
+    Color accentColor, {
     int flex = 0,
   }) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final textTheme = theme.textTheme;
+
     final widget = Card(
-      color: color.withValues(alpha: 0.1),
+      color: colorScheme.surfaceContainerHigh,
+      elevation: 0,
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Icon(icon, color: color, size: 32),
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: accentColor.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                icon,
+                color: accentColor,
+                size: 26,
+              ),
+            ),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -337,18 +355,26 @@ class _StatisticsScreenState extends ConsumerState<StatisticsScreen> {
                 children: [
                   Text(
                     label,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey,
-                    ),
+                    style: textTheme.labelMedium?.copyWith(
+                          color: colorScheme.onSurfaceVariant,
+                        ) ??
+                        TextStyle(
+                          fontSize: 12,
+                          color: colorScheme.onSurfaceVariant,
+                        ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     value,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.titleMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                          fontWeight: FontWeight.bold,
+                        ) ??
+                        TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: colorScheme.onSurface,
+                        ),
                   ),
                 ],
               ),

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:lube_logger_companion_app/core/constants/app_constants.dart';
 
@@ -55,6 +56,7 @@ class StorageService {
   // Polling configuration
   static const String _keyPollingEnabled = 'polling_enabled';
   static const String _keyPollingInterval = 'polling_interval';
+  static const String _keyThemeMode = 'theme_mode';
   
   static const int defaultPollingInterval = 60; // 60 seconds default
   
@@ -74,5 +76,22 @@ class StorageService {
   
   static Future<int> getPollingInterval() async {
     return _prefs?.getInt(_keyPollingInterval) ?? defaultPollingInterval;
+  }
+
+  static Future<bool> setThemeMode(ThemeMode mode) async {
+    return await _prefs?.setString(_keyThemeMode, mode.name) ?? false;
+  }
+
+  static ThemeMode getThemeMode() {
+    final stored = _prefs?.getString(_keyThemeMode);
+    switch (stored) {
+      case 'light':
+        return ThemeMode.light;
+      case 'dark':
+        return ThemeMode.dark;
+      case 'system':
+      default:
+        return ThemeMode.system;
+    }
   }
 }

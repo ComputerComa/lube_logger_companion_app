@@ -4,12 +4,24 @@ import 'package:go_router/go_router.dart';
 import 'package:lube_logger_companion_app/core/utils/validators.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/providers/fuel_provider.dart';
+import 'package:lube_logger_companion_app/providers/extra_fields_provider.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field_definition.dart';
+import 'package:lube_logger_companion_app/data/models/fuel_record.dart';
+import 'package:lube_logger_companion_app/presentation/widgets/extra_fields_form_section.dart';
 import 'package:intl/intl.dart';
 
 class AddFuelScreen extends ConsumerStatefulWidget {
   final int? vehicleId;
+  final FuelRecord? record;
 
-  const AddFuelScreen({super.key, this.vehicleId});
+  const AddFuelScreen({
+    super.key,
+    this.vehicleId,
+    this.record,
+  });
+
+  bool get isEditing => record != null;
 
   @override
   ConsumerState<AddFuelScreen> createState() => _AddFuelScreenState();
@@ -22,16 +34,34 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
   final _costController = TextEditingController();
   final _notesController = TextEditingController();
   final _tagController = TextEditingController();
+  final _extraFieldsKey = GlobalKey<ExtraFieldsFormSectionState>();
   DateTime _selectedDate = DateTime.now();
   int? _selectedVehicleId;
   bool _isFillToFull = false;
   bool _missedFuelUp = false;
   final Set<String> _selectedTags = {};
+  Map<String, String> _initialExtraFieldValues = {};
 
   @override
   void initState() {
     super.initState();
-    _selectedVehicleId = widget.vehicleId;
+    final record = widget.record;
+    if (record != null) {
+      _selectedVehicleId = record.vehicleId;
+      _selectedDate = record.date;
+      _odometerController.text = record.odometer.toString();
+      _gallonsController.text = record.gallons.toStringAsFixed(2);
+      _costController.text = record.cost.toStringAsFixed(2);
+      _notesController.text = record.notes ?? '';
+      _isFillToFull = record.isFillToFull;
+      _missedFuelUp = record.missedFuelUp;
+      _selectedTags.addAll(record.tags);
+      _initialExtraFieldValues = {
+        for (final field in record.extraFields) field.name: field.value,
+      };
+    } else {
+      _selectedVehicleId = widget.vehicleId;
+    }
   }
 
   @override
@@ -87,23 +117,43 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
     }
 
     try {
-      await ref.read(addFuelProvider(
-        (
-          vehicleId: _selectedVehicleId!,
-          date: _selectedDate,
-          odometer: int.parse(_odometerController.text),
-          gallons: double.parse(_gallonsController.text),
-          cost: double.parse(_costController.text),
-          isFillToFull: _isFillToFull,
-          missedFuelUp: _missedFuelUp,
-          tags: _selectedTags.toList(),
-          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-        ),
-      ).future);
+      final extraFields =
+          _extraFieldsKey.currentState?.collectExtraFields() ?? <ExtraField>[];
+
+      final params = (
+        vehicleId: _selectedVehicleId!,
+        date: _selectedDate,
+        odometer: int.parse(_odometerController.text),
+        gallons: double.parse(_gallonsController.text),
+        cost: double.parse(_costController.text),
+        isFillToFull: _isFillToFull,
+        missedFuelUp: _missedFuelUp,
+        tags: _selectedTags.toList(),
+        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+        extraFields: extraFields.isNotEmpty ? extraFields : null,
+      );
+
+      if (widget.isEditing) {
+        await ref.read(updateFuelProvider((
+          id: widget.record!.id,
+          date: params.date,
+          odometer: params.odometer,
+          gallons: params.gallons,
+          cost: params.cost,
+          notes: params.notes,
+          extraFields: params.extraFields,
+        )).future);
+      } else {
+        await ref.read(addFuelProvider(params).future);
+      }
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Fuel entry added successfully')),
+          SnackBar(
+            content: Text(widget.isEditing
+                ? 'Fuel entry updated successfully'
+                : 'Fuel entry added successfully'),
+          ),
         );
         context.pop();
       }
@@ -119,10 +169,11 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
   @override
   Widget build(BuildContext context) {
     final vehiclesAsync = ref.watch(vehiclesProvider);
+    final extraFieldsAsync = ref.watch(extraFieldDefinitionsProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Fuel Entry'),
+        title: Text(widget.isEditing ? 'Edit Fuel Entry' : 'Add Fuel Entry'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -137,6 +188,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                     return const Text('No vehicles found');
                   }
                   return DropdownButtonFormField<int>(
+                    key: ValueKey(_selectedVehicleId),
                     initialValue: _selectedVehicleId,
                     decoration: const InputDecoration(
                       labelText: 'Vehicle',
@@ -222,6 +274,36 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                 ),
               ),
               const SizedBox(height: 16),
+              extraFieldsAsync.when(
+                data: (records) {
+                  final recordDefinition = records.firstWhere(
+                    (record) => record.recordType == 'GasRecord',
+                    orElse: () => RecordExtraFields(
+                      recordType: 'GasRecord',
+                      extraFields: const [],
+                    ),
+                  );
+
+                  if (recordDefinition.extraFields.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ExtraFieldsFormSection(
+                        key: _extraFieldsKey,
+                        definitions: recordDefinition.extraFields,
+                        title: 'Additional Fuel Fields',
+                        initialValues: _initialExtraFieldValues,
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (error, stack) => const SizedBox.shrink(),
+              ),
               SwitchListTile(
                 title: const Text('Filled To Full'),
                 value: _isFillToFull,
@@ -356,7 +438,7 @@ class _AddFuelScreenState extends ConsumerState<AddFuelScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Add Entry'),
+                child: Text(widget.isEditing ? 'Save Changes' : 'Add Entry'),
               ),
             ],
           ),

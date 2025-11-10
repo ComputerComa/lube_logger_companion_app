@@ -8,6 +8,7 @@ import 'package:lube_logger_companion_app/services/notification_service.dart';
 import 'package:lube_logger_companion_app/services/polling_service.dart';
 import 'package:lube_logger_companion_app/services/cache_service.dart';
 import 'package:lube_logger_companion_app/services/connectivity_service.dart';
+import 'package:lube_logger_companion_app/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,6 +38,7 @@ class MyApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
+    final themeMode = ref.watch(themeModeProvider);
     
     // Initialize polling manager - this will start/stop polling based on auth state
     ref.listen(pollingManagerProvider, (previous, next) {
@@ -47,7 +49,7 @@ class MyApp extends ConsumerWidget {
       title: 'LubeLogger Companion',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeMode,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );

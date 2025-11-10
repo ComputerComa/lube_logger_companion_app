@@ -6,6 +6,7 @@ import 'package:lube_logger_companion_app/providers/auth_provider.dart';
 import 'package:lube_logger_companion_app/services/polling_service.dart';
 import 'package:lube_logger_companion_app/services/storage_service.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
+import 'package:lube_logger_companion_app/providers/theme_provider.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -21,6 +22,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     final pollingIntervalAsync = ref.watch(pollingIntervalProvider);
     final authState = ref.watch(authStateProvider);
     final pollingService = ref.watch(pollingServiceProvider);
+    final themeMode = ref.watch(themeModeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -80,11 +82,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     subtitle: const Text('Automatically refresh data from server'),
                     value: enabled,
                     onChanged: (value) async {
+                      final messenger = ScaffoldMessenger.of(context);
                       await StorageService.setPollingEnabled(value);
                       ref.invalidate(pollingEnabledProvider);
                       
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             value 
@@ -109,6 +111,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   data: (interval) => _PollingIntervalTile(
                     interval: interval,
                     onChanged: (newInterval) async {
+                      final messenger = ScaffoldMessenger.of(context);
                       await StorageService.setPollingInterval(newInterval);
                       ref.invalidate(pollingIntervalProvider);
                       
@@ -118,8 +121,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         pollingService.startPolling(intervalSeconds: newInterval);
                       }
                       
-                      if (!mounted) return;
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      messenger.showSnackBar(
                         SnackBar(
                           content: Text(
                             'Refresh interval set to ${_formatInterval(newInterval)}',
@@ -155,6 +157,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           Card(
             child: Column(
               children: [
+                ListTile(
+                  leading: const Icon(Icons.color_lens),
+                  title: const Text('Theme'),
+                  subtitle: Text(_themeModeLabel(themeMode)),
+                  trailing: DropdownButtonHideUnderline(
+                    child: DropdownButton<ThemeMode>(
+                      value: themeMode,
+                      items: const [
+                        DropdownMenuItem(
+                          value: ThemeMode.system,
+                          child: Text('Auto'),
+                        ),
+                        DropdownMenuItem(
+                          value: ThemeMode.light,
+                          child: Text('Light'),
+                        ),
+                        DropdownMenuItem(
+                          value: ThemeMode.dark,
+                          child: Text('Dark'),
+                        ),
+                      ],
+                      onChanged: (mode) async {
+                        if (mode == null) return;
+                        final messenger = ScaffoldMessenger.of(context);
+                        await ref.read(themeModeProvider.notifier).setThemeMode(mode);
+                        messenger.showSnackBar(
+                          SnackBar(
+                            content: Text('Theme set to ${_themeModeLabel(mode)}'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.info_outline),
                   title: const Text('About'),
@@ -206,6 +243,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             ),
       ),
     );
+  }
+
+  String _themeModeLabel(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.light:
+        return 'Light';
+      case ThemeMode.dark:
+        return 'Dark';
+      case ThemeMode.system:
+        return 'Auto';
+    }
   }
 
   String _formatInterval(int seconds) {

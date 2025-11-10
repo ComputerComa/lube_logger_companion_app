@@ -8,7 +8,10 @@ import 'package:lube_logger_companion_app/data/models/service_record.dart';
 import 'package:lube_logger_companion_app/data/models/repair_record.dart';
 import 'package:lube_logger_companion_app/data/models/upgrade_record.dart';
 import 'package:lube_logger_companion_app/data/models/tax_record.dart';
+import 'package:lube_logger_companion_app/data/models/plan_record.dart';
+import 'package:lube_logger_companion_app/data/models/version_info.dart';
 import 'package:lube_logger_companion_app/data/models/extra_field.dart';
+import 'package:lube_logger_companion_app/data/models/extra_field_definition.dart';
 import 'package:lube_logger_companion_app/core/utils/date_formatters.dart';
 
 class LubeLoggerRepository {
@@ -34,6 +37,52 @@ class LubeLoggerRepository {
     }
     
     throw Exception('Failed to load vehicles: ${response.statusCode}');
+  }
+  
+  Future<VersionInfo> getServerVersion({
+    required String serverUrl,
+    required String username,
+    required String password,
+    bool checkForUpdate = false,
+  }) async {
+    final response = await apiClient.get(
+      '/api/version',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: checkForUpdate
+          ? {'CheckForUpdate': checkForUpdate.toString()}
+          : null,
+    );
+    
+    if (response.statusCode == 200) {
+      return VersionInfo.fromResponseBody(response.body);
+    }
+    
+    throw Exception('Failed to load server version: ${response.statusCode}');
+  }
+
+  Future<List<RecordExtraFields>> getExtraFieldDefinitions({
+    required String serverUrl,
+    required String username,
+    required String password,
+  }) async {
+    final response = await apiClient.get(
+      '/api/extrafields',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List<dynamic>;
+      return data
+          .map((item) =>
+              RecordExtraFields.fromJson(item as Map<String, dynamic>))
+          .toList();
+    }
+
+    throw Exception('Failed to load extra field definitions: ${response.statusCode}');
   }
   
   Future<Vehicle> getVehicleInfo({
@@ -313,6 +362,7 @@ class LubeLoggerRepository {
     bool missedFuelUp = false,
     List<String> tags = const [],
     String? notes,
+    List<ExtraField>? extraFields,
   }) async {
     final formData = <String, dynamic>{
       'date': DateFormatters.formatForApi(date),
@@ -329,6 +379,10 @@ class LubeLoggerRepository {
     
     if (notes != null && notes.isNotEmpty) {
       formData['notes'] = notes;
+    }
+
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
     }
     
     final formDataMap = apiClient.buildFormData(formData);
@@ -358,6 +412,7 @@ class LubeLoggerRepository {
     required double gallons,
     double? cost,
     String? notes,
+    List<ExtraField>? extraFields,
   }) async {
     final formData = <String, dynamic>{
       'id': id.toString(),
@@ -372,6 +427,10 @@ class LubeLoggerRepository {
     
     if (notes != null && notes.isNotEmpty) {
       formData['notes'] = notes;
+    }
+
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
     }
     
     final formDataMap = apiClient.buildFormData(formData);
@@ -1106,6 +1165,148 @@ class LubeLoggerRepository {
     
     if (response.statusCode != 200) {
       throw Exception('Failed to delete tax record: ${response.statusCode}');
+    }
+  }
+
+  // Plan Records
+  Future<List<PlanRecord>> getPlanRecords({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int vehicleId,
+  }) async {
+    final response = await apiClient.get(
+      '/api/vehicle/planrecords',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'vehicleId': vehicleId.toString()},
+    );
+    
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body) as List;
+      return data.map((json) {
+        final recordJson = json as Map<String, dynamic>;
+        if (!recordJson.containsKey('vehicleId') &&
+            !recordJson.containsKey('vehicle_id') &&
+            !recordJson.containsKey('VehicleId')) {
+          recordJson['vehicleId'] = vehicleId;
+        }
+        return PlanRecord.fromJson(recordJson);
+      }).toList();
+    }
+    
+    throw Exception('Failed to load plan records: ${response.statusCode}');
+  }
+
+  Future<void> addPlanRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int vehicleId,
+    required String description,
+    required double cost,
+    required PlanRecordType type,
+    required PlanRecordPriority priority,
+    required PlanRecordProgress progress,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'description': description,
+      'cost': cost.toString(),
+      'type': planRecordTypeToApi(type),
+      'priority': planRecordPriorityToApi(priority),
+      'progress': planRecordProgressToApi(progress),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.post(
+      '/api/vehicle/planrecords/add',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'vehicleId': vehicleId.toString()},
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception('Failed to add plan record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> updatePlanRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+    required String description,
+    required double cost,
+    required PlanRecordType type,
+    required PlanRecordPriority priority,
+    required PlanRecordProgress progress,
+    String? notes,
+    List<ExtraField>? extraFields,
+  }) async {
+    final formData = <String, dynamic>{
+      'id': id.toString(),
+      'description': description,
+      'cost': cost.toString(),
+      'type': planRecordTypeToApi(type),
+      'priority': planRecordPriorityToApi(priority),
+      'progress': planRecordProgressToApi(progress),
+    };
+    
+    if (notes != null && notes.isNotEmpty) {
+      formData['notes'] = notes;
+    }
+    
+    if (extraFields != null && extraFields.isNotEmpty) {
+      formData['extrafields'] = extraFields.map((e) => e.toJson()).toList();
+    }
+    
+    final formDataMap = apiClient.buildFormData(formData);
+    
+    final response = await apiClient.put(
+      '/api/vehicle/planrecords/update',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      body: formDataMap,
+      isFormData: true,
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to update plan record: ${response.statusCode}');
+    }
+  }
+
+  Future<void> deletePlanRecord({
+    required String serverUrl,
+    required String username,
+    required String password,
+    required int id,
+  }) async {
+    final response = await apiClient.delete(
+      '/api/vehicle/planrecords/delete',
+      serverUrl: serverUrl,
+      username: username,
+      password: password,
+      queryParameters: {'id': id.toString()},
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Failed to delete plan record: ${response.statusCode}');
     }
   }
 }

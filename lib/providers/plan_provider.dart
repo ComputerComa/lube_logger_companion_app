@@ -1,125 +1,118 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:lube_logger_companion_app/data/models/fuel_record.dart';
+import 'package:lube_logger_companion_app/data/models/plan_record.dart';
 import 'package:lube_logger_companion_app/data/models/extra_field.dart';
 import 'package:lube_logger_companion_app/providers/auth_provider.dart';
 import 'package:lube_logger_companion_app/providers/auth_helpers.dart';
 import 'package:lube_logger_companion_app/providers/vehicle_provider.dart';
 import 'package:lube_logger_companion_app/services/cached_data_helper.dart';
 
-final fuelRecordsProvider = FutureProvider.family<List<FuelRecord>, int>((ref, vehicleId) async {
+final planRecordsProvider = FutureProvider.family<List<PlanRecord>, int>((ref, vehicleId) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
-  
-  // Get credentials from storage
+
   final credentials = getCredentials(authState);
-  
+
   final cacheKey = CachedDataHelper.vehicleCacheKey(
-    'fuel_records',
+    'plan_records',
     vehicleId,
     credentials.serverUrl,
     credentials.username,
   );
-  
-  return await CachedDataHelper.fetchWithCache<FuelRecord>(
-    fetchFn: () => repository.getFuelRecords(
+
+  return CachedDataHelper.fetchWithCache<PlanRecord>(
+    fetchFn: () => repository.getPlanRecords(
       serverUrl: credentials.serverUrl,
       username: credentials.username,
       password: credentials.password,
       vehicleId: vehicleId,
     ),
     cacheKey: cacheKey,
-    fromJson: (json) => FuelRecord.fromJson(json),
+    fromJson: (json) => PlanRecord.fromJson(json),
     toJson: (record) => record.toJson(),
   );
 });
 
-final addFuelProvider = FutureProvider.family<void, ({
+final addPlanRecordProvider = FutureProvider.family<void, ({
   int vehicleId,
-  DateTime date,
-  int odometer,
-  double gallons,
+  String description,
   double cost,
-  bool isFillToFull,
-  bool missedFuelUp,
-  List<String> tags,
+  PlanRecordType type,
+  PlanRecordPriority priority,
+  PlanRecordProgress progress,
   String? notes,
   List<ExtraField>? extraFields,
 })>((ref, params) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
-  
-  // Get credentials from storage
+
   final credentials = getCredentials(authState);
-  
-  await repository.addFuelRecord(
+
+  await repository.addPlanRecord(
     serverUrl: credentials.serverUrl,
     username: credentials.username,
     password: credentials.password,
     vehicleId: params.vehicleId,
-    date: params.date,
-    odometer: params.odometer,
-    gallons: params.gallons,
+    description: params.description,
     cost: params.cost,
-    isFillToFull: params.isFillToFull,
-    missedFuelUp: params.missedFuelUp,
-    tags: params.tags,
+    type: params.type,
+    priority: params.priority,
+    progress: params.progress,
     notes: params.notes,
     extraFields: params.extraFields,
   );
-  
-  // Invalidate related providers to refresh data
-  ref.invalidate(fuelRecordsProvider(params.vehicleId));
+
+  ref.invalidate(planRecordsProvider(params.vehicleId));
 });
 
-final updateFuelProvider = FutureProvider.family<void, ({
+final updatePlanRecordProvider = FutureProvider.family<void, ({
   int id,
-  DateTime date,
-  int odometer,
-  double gallons,
-  double? cost,
+  int vehicleId,
+  String description,
+  double cost,
+  PlanRecordType type,
+  PlanRecordPriority priority,
+  PlanRecordProgress progress,
   String? notes,
   List<ExtraField>? extraFields,
 })>((ref, params) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
-  
-  // Get credentials from storage
+
   final credentials = getCredentials(authState);
-  
-  await repository.updateFuelRecord(
+
+  await repository.updatePlanRecord(
     serverUrl: credentials.serverUrl,
     username: credentials.username,
     password: credentials.password,
     id: params.id,
-    date: params.date,
-    odometer: params.odometer,
-    gallons: params.gallons,
+    description: params.description,
     cost: params.cost,
+    type: params.type,
+    priority: params.priority,
+    progress: params.progress,
     notes: params.notes,
     extraFields: params.extraFields,
   );
-  
-  // Invalidate all fuel providers - in production, track vehicleId per record
-  ref.invalidate(fuelRecordsProvider);
+
+  ref.invalidate(planRecordsProvider(params.vehicleId));
 });
 
-final deleteFuelProvider = FutureProvider.family<void, ({
+final deletePlanRecordProvider = FutureProvider.family<void, ({
   int id,
   int vehicleId,
 })>((ref, params) async {
   final authState = ref.watch(authStateProvider);
   final repository = ref.watch(repositoryProvider);
-  
-  // Get credentials from storage
+
   final credentials = getCredentials(authState);
-  
-  await repository.deleteFuelRecord(
+
+  await repository.deletePlanRecord(
     serverUrl: credentials.serverUrl,
     username: credentials.username,
     password: credentials.password,
     id: params.id,
   );
-  
-  // Invalidate related providers to refresh data
-  ref.invalidate(fuelRecordsProvider(params.vehicleId));
+
+  ref.invalidate(planRecordsProvider(params.vehicleId));
 });
+

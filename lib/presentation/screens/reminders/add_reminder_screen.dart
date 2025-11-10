@@ -10,8 +10,15 @@ import 'package:intl/intl.dart';
 
 class AddReminderScreen extends ConsumerStatefulWidget {
   final int? vehicleId;
+  final Reminder? record;
 
-  const AddReminderScreen({super.key, this.vehicleId});
+  const AddReminderScreen({
+    super.key,
+    this.vehicleId,
+    this.record,
+  });
+
+  bool get isEditing => record != null;
 
   @override
   ConsumerState<AddReminderScreen> createState() => _AddReminderScreenState();
@@ -28,7 +35,16 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
   @override
   void initState() {
     super.initState();
-    _selectedVehicleId = widget.vehicleId;
+    final record = widget.record;
+    if (record != null) {
+      _selectedVehicleId = record.vehicleId;
+      _titleController.text = record.description;
+      _notesController.text = record.notes ?? '';
+      _selectedDate = record.date;
+      _selectedUrgency = record.urgency;
+    } else {
+      _selectedVehicleId = widget.vehicleId;
+    }
   }
 
   @override
@@ -65,19 +81,32 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
     }
 
     try {
-      await ref.read(addReminderProvider((
-        vehicleId: _selectedVehicleId!,
-        date: _selectedDate,
-        description: _titleController.text,
-        urgency: _selectedUrgency,
-        notes: _notesController.text.isNotEmpty ? _notesController.text : null,
-        metric: null,
-        dueOdometer: null,
-      )).future);
+      if (widget.isEditing) {
+        await ref.read(updateReminderProvider((
+          id: widget.record!.id,
+          date: _selectedDate,
+          description: _titleController.text,
+          urgency: _selectedUrgency,
+          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+          metric: null,
+          dueOdometer: null,
+          vehicleId: _selectedVehicleId,
+        )).future);
+      } else {
+        await ref.read(addReminderProvider((
+          vehicleId: _selectedVehicleId!,
+          date: _selectedDate,
+          description: _titleController.text,
+          urgency: _selectedUrgency,
+          notes: _notesController.text.isNotEmpty ? _notesController.text : null,
+          metric: null,
+          dueOdometer: null,
+        )).future);
+      }
 
       // Schedule notification for the reminder
       final reminder = Reminder(
-        id: DateTime.now().millisecondsSinceEpoch,
+        id: widget.record?.id ?? DateTime.now().millisecondsSinceEpoch,
         vehicleId: _selectedVehicleId!,
         description: _titleController.text,
         date: _selectedDate,
@@ -88,7 +117,11 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Reminder added successfully')),
+          SnackBar(
+            content: Text(widget.isEditing
+                ? 'Reminder updated successfully'
+                : 'Reminder added successfully'),
+          ),
         );
         context.pop();
       }
@@ -107,7 +140,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Reminder'),
+        title: Text(widget.isEditing ? 'Edit Reminder' : 'Add Reminder'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -212,7 +245,7 @@ class _AddReminderScreenState extends ConsumerState<AddReminderScreen> {
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
                 ),
-                child: const Text('Add Reminder'),
+                child: Text(widget.isEditing ? 'Save Changes' : 'Add Reminder'),
               ),
             ],
           ),

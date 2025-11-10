@@ -9,6 +9,7 @@ import 'package:lube_logger_companion_app/providers/odometer_provider.dart';
 import 'package:lube_logger_companion_app/providers/fuel_provider.dart';
 import 'package:lube_logger_companion_app/providers/reminder_provider.dart';
 import 'package:lube_logger_companion_app/providers/service_provider.dart';
+import 'package:lube_logger_companion_app/providers/plan_provider.dart';
 import 'package:lube_logger_companion_app/data/models/reminder.dart';
 import 'package:lube_logger_companion_app/data/models/service_record.dart';
 import 'package:lube_logger_companion_app/core/utils/date_formatters.dart';
@@ -39,6 +40,7 @@ class VehicleDetailScreen extends ConsumerWidget {
           ref.invalidate(fuelRecordsProvider(vehicleId));
           ref.invalidate(remindersProvider(vehicleId));
           ref.invalidate(serviceRecordsProvider(vehicleId));
+          ref.invalidate(planRecordsProvider(vehicleId));
           ref.invalidate(latestOdometerProvider(vehicleId));
           ref.invalidate(statisticsProvider(vehicleId));
           ref.invalidate(latestOdometerValueProvider(vehicleId));
@@ -615,6 +617,14 @@ class VehicleDetailScreen extends ConsumerWidget {
               onTap: () {
                 Navigator.pop(context);
                 context.push('${AppRoutes.reminders}?vehicleId=$vehicleId');
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.assignment),
+              title: const Text('Manage Plan Records'),
+              onTap: () {
+                Navigator.pop(context);
+                context.push('${AppRoutes.plan}?vehicleId=$vehicleId');
               },
             ),
           ],

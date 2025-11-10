@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:lube_logger_companion_app/providers/version_provider.dart';
+import 'package:lube_logger_companion_app/data/models/version_info.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class InfoScreen extends StatefulWidget {
+class InfoScreen extends ConsumerStatefulWidget {
   const InfoScreen({super.key});
 
   @override
-  State<InfoScreen> createState() => _InfoScreenState();
+  ConsumerState<InfoScreen> createState() => _InfoScreenState();
 }
 
-class _InfoScreenState extends State<InfoScreen> {
+class _InfoScreenState extends ConsumerState<InfoScreen> {
   String _version = 'Loading...';
   String _buildNumber = '';
 
@@ -62,6 +65,7 @@ class _InfoScreenState extends State<InfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final serverVersionAsync = ref.watch(serverVersionProvider);
     return Scaffold(
       appBar: AppBar(
         title: const Text('About'),
@@ -108,7 +112,23 @@ class _InfoScreenState extends State<InfoScreen> {
               ),
             ),
             const SizedBox(height: 32),
-            
+            serverVersionAsync.when(
+              data: (info) => _buildServerVersionCard(context, info),
+              loading: () => const Card(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Row(
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(width: 16),
+                      Text('Fetching server version...'),
+                    ],
+                  ),
+                ),
+              ),
+              error: (error, stack) => _buildServerVersionErrorCard(context, error),
+            ),
+            const SizedBox(height: 24),
             // Credits Section
             _buildSectionHeader('Credits'),
             _buildInfoCard(
@@ -253,6 +273,22 @@ class _InfoScreenState extends State<InfoScreen> {
     );
   }
 
+  Widget _buildStatRow(String label, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildInfoCard({
     required IconData icon,
     required String title,
@@ -293,6 +329,85 @@ class _InfoScreenState extends State<InfoScreen> {
               const Icon(Icons.chevron_right),
             ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServerVersionCard(BuildContext context, VersionInfo versionInfo) {
+    final entries = <Widget>[];
+
+    if (versionInfo.currentVersion != null) {
+      entries.add(_buildStatRow('Current Version', versionInfo.currentVersion!));
+    }
+    if (versionInfo.latestVersion != null) {
+      entries.add(_buildStatRow('Latest Version', versionInfo.latestVersion!));
+    }
+    if (versionInfo.updateAvailable != null) {
+      entries.add(_buildStatRow(
+        'Update Available',
+        versionInfo.updateAvailable! ? 'Yes' : 'No',
+      ));
+    }
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.cloud, size: 32, color: Colors.blue),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    'LubeLogger Server',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (entries.isNotEmpty)
+              ...entries
+            else
+              Text(
+                versionInfo.rawBody.isNotEmpty
+                    ? versionInfo.rawBody
+                    : 'Server responded without version details.',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            if (versionInfo.downloadUrl != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: TextButton.icon(
+                  onPressed: () => _launchURL(versionInfo.downloadUrl!),
+                  icon: const Icon(Icons.download),
+                  label: const Text('Open Download Page'),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildServerVersionErrorCard(BuildContext context, Object error) {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline, color: Colors.red),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Unable to fetch server version: $error',
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ],
         ),
       ),
     );

@@ -20,9 +20,19 @@ import 'package:lube_logger_companion_app/presentation/screens/upgrade/upgrade_l
 import 'package:lube_logger_companion_app/presentation/screens/upgrade/add_upgrade_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/tax/tax_list_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/tax/add_tax_screen.dart';
+import 'package:lube_logger_companion_app/presentation/screens/plan/plan_list_screen.dart';
+import 'package:lube_logger_companion_app/presentation/screens/plan/add_plan_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/info/info_screen.dart';
 import 'package:lube_logger_companion_app/presentation/screens/settings/settings_screen.dart';
 import 'package:lube_logger_companion_app/services/storage_service.dart';
+import 'package:lube_logger_companion_app/data/models/fuel_record.dart';
+import 'package:lube_logger_companion_app/data/models/odometer_record.dart';
+import 'package:lube_logger_companion_app/data/models/service_record.dart';
+import 'package:lube_logger_companion_app/data/models/repair_record.dart';
+import 'package:lube_logger_companion_app/data/models/upgrade_record.dart';
+import 'package:lube_logger_companion_app/data/models/tax_record.dart';
+import 'package:lube_logger_companion_app/data/models/plan_record.dart';
+import 'package:lube_logger_companion_app/data/models/reminder.dart';
 
 /// Helper function to check if setup credentials exist in storage
 bool _hasSetupCredentials() {
@@ -43,19 +53,29 @@ class AppRoutes {
   static const String vehicleDetail = '/vehicles/:id';
   static const String odometer = '/odometer';
   static const String addOdometer = '/odometer/add';
+  static const String editOdometer = '/odometer/edit';
   static const String fuel = '/fuel';
   static const String addFuel = '/fuel/add';
+  static const String editFuel = '/fuel/edit';
   static const String reminders = '/reminders';
   static const String addReminder = '/reminders/add';
+  static const String editReminder = '/reminders/edit';
   static const String statistics = '/statistics';
   static const String service = '/service';
   static const String addService = '/service/add';
+  static const String editService = '/service/edit';
   static const String repair = '/repair';
   static const String addRepair = '/repair/add';
+  static const String editRepair = '/repair/edit';
   static const String upgrade = '/upgrade';
   static const String addUpgrade = '/upgrade/add';
+  static const String editUpgrade = '/upgrade/edit';
   static const String tax = '/tax';
   static const String addTax = '/tax/add';
+  static const String editTax = '/tax/edit';
+  static const String plan = '/plan';
+  static const String addPlan = '/plan/add';
+  static const String editPlan = '/plan/edit';
   static const String info = '/info';
   static const String settings = '/settings';
 }
@@ -157,6 +177,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.editOdometer,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as OdometerRecord?;
+          return AddOdometerScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.fuel,
         builder: (context, state) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
@@ -175,6 +208,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.editFuel,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as FuelRecord?;
+          return AddFuelScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.reminders,
         builder: (context, state) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
@@ -189,6 +235,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
           return AddReminderScreen(
             vehicleId: vehicleId != null ? int.parse(vehicleId) : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editReminder,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as Reminder?;
+          return AddReminderScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
           );
         },
       ),
@@ -220,6 +279,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.editService,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as ServiceRecord?;
+          return AddServiceScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.repair,
         builder: (context, state) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
@@ -234,6 +306,19 @@ final routerProvider = Provider<GoRouter>((ref) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
           return AddRepairScreen(
             vehicleId: vehicleId != null ? int.parse(vehicleId) : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editRepair,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as RepairRecord?;
+          return AddRepairScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
           );
         },
       ),
@@ -256,6 +341,19 @@ final routerProvider = Provider<GoRouter>((ref) {
         },
       ),
       GoRoute(
+        path: AppRoutes.editUpgrade,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as UpgradeRecord?;
+          return AddUpgradeScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
+          );
+        },
+      ),
+      GoRoute(
         path: AppRoutes.tax,
         builder: (context, state) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
@@ -270,6 +368,50 @@ final routerProvider = Provider<GoRouter>((ref) {
           final vehicleId = state.uri.queryParameters['vehicleId'];
           return AddTaxScreen(
             vehicleId: vehicleId != null ? int.parse(vehicleId) : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editTax,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as TaxRecord?;
+          return AddTaxScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.plan,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          return PlanListScreen(
+            initialVehicleId: vehicleId != null ? int.parse(vehicleId) : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.addPlan,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          return AddPlanScreen(
+            vehicleId: vehicleId != null ? int.parse(vehicleId) : null,
+          );
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.editPlan,
+        builder: (context, state) {
+          final vehicleId = state.uri.queryParameters['vehicleId'];
+          final record = state.extra as PlanRecord?;
+          return AddPlanScreen(
+            vehicleId: vehicleId != null
+                ? int.parse(vehicleId)
+                : record?.vehicleId,
+            record: record,
           );
         },
       ),
