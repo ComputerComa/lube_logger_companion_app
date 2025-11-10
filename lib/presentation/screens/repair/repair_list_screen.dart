@@ -130,6 +130,7 @@ class _RepairListScreenState extends ConsumerState<RepairListScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onLongPress: () => _showRepairActions(context, record, vehicleId),
                   child: RepairRecordCard(record: record),
                 ),

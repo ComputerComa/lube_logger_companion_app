@@ -128,6 +128,7 @@ class _RemindersListScreenState extends ConsumerState<RemindersListScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onLongPress: () => _showReminderActions(context, reminder, vehicleId),
                   child: ReminderCard(reminder: reminder),
                 ),

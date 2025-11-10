@@ -1,4 +1,5 @@
 # lube_logger_companion_app
+[![pages-build-deployment](https://github.com/ComputerComa/lube_logger_companion_app/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/ComputerComa/lube_logger_companion_app/actions/workflows/pages/pages-build-deployment)
 
 A Cross Platfrom (Android & IOS primarily) companion app for the Open Source [Lube Logger](https://github.com/hargata/lubelog) vehicle maintenance and fuel Mileage Tracker. 
 

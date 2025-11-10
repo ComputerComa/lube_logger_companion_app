@@ -130,6 +130,7 @@ class _ServiceListScreenState extends ConsumerState<ServiceListScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onLongPress: () => _showServiceActions(context, record, vehicleId),
                   child: ServiceRecordCard(record: record),
                 ),

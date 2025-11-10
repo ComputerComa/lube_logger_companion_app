@@ -130,6 +130,7 @@ class _UpgradeListScreenState extends ConsumerState<UpgradeListScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onLongPress: () => _showUpgradeActions(context, record, vehicleId),
                   child: UpgradeRecordCard(record: record),
                 ),

@@ -89,6 +89,7 @@ class _PlanListScreenState extends ConsumerState<PlanListScreen> {
                                 itemBuilder: (context, index) {
                                   final record = records[index];
                                   return GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
                                     onLongPress: () => _showPlanActions(
                                       context,
                                       record,

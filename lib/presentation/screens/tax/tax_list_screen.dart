@@ -130,6 +130,7 @@ class _TaxListScreenState extends ConsumerState<TaxListScreen> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8),
                 child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
                   onLongPress: () => _showTaxActions(context, record, vehicleId),
                   child: TaxRecordCard(record: record),
                 ),
