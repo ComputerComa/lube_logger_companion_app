@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ page.title | default: site.title }}</title>
+    <meta name="description" content="{{ page.description | default: site.description }}" />
+    <link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container">
+        <div class="site-brand">
+          <span class="site-logo">🛠️</span>
+          <div>
+            <p class="site-title">{{ site.title }}</p>
+            <p class="site-tagline">{{ site.description }}</p>
+          </div>
+        </div>
+        <nav class="site-nav">
+          <a href="#features">Features</a>
+          <a href="#architecture">Architecture</a>
+          <a href="#screens">Screenshots</a>
+          <a href="#roadmap">Roadmap</a>
+          <a href="#contact">Contact</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>{{ content }}</main>
+
+    <footer class="site-footer" id="contact">
+      <div class="container footer-grid">
+        <div>
+          <p class="footer-title">{{ site.title }}</p>
+          <p class="footer-text">{{ site.description }}</p>
+        </div>
+        <div>
+          <p class="footer-heading">Links</p>
+          <ul>
+            <li><a href="https://github.com/{{ site.github_username }}/{{ site.github_repo }}" target="_blank">Source Code</a></li>
+            <li><a href="https://github.com/{{ site.github_username }}/{{ site.github_repo }}/issues" target="_blank">Issue Tracker</a></li>
+          </ul>
+        </div>
+        <div>
+          <p class="footer-heading">Connect</p>
+          <ul>
+            <li><a href="mailto:{{ site.contact_email }}">Email</a></li>
+            <li><a href="{{ site.contact_linkedin }}" target="_blank">LinkedIn</a></li>
+          </ul>
+        </div>
+      </div>
+      <p class="footer-meta">© {{ site.time | date: '%Y' }} {{ site.author }}. Built with Jekyll & GitHub Pages.</p>
+    </footer>
+  </body>
+</html>
+

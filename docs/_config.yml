@@ -1,0 +1,18 @@
+title: Lube Logger Companion App
+description: Companion Flutter app for managing vehicles, service history, fuel logs, and maintenance plans.
+author: Your Name
+baseurl: ""
+url: ""
+theme: null
+markdown: kramdown
+permalink: pretty
+collections_dir: collections
+exclude:
+  - README.md
+sass:
+  style: compressed
+github_username: your-github-handle
+github_repo: lube_logger_companion_app
+contact_email: hello@example.com
+contact_linkedin: https://www.linkedin.com/
+
